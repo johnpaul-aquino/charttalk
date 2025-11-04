@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "chart-img": {
+      "command": "npx",
+      "args": ["tsx", "src/mcp/server.ts"],
+      "description": "MCP server for chart-img.com integration - Generate professional trading charts with technical indicators",
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}
