@@ -15,6 +15,74 @@ This guide shows you how to integrate the MCP Chart-Image Server with **Claude D
 
 ---
 
+## Project Architecture
+
+This project uses a **modular monolith** architecture, designed for easy maintenance and future microservice extraction.
+
+### Directory Structure
+
+```
+src/
+├── modules/              # Domain modules (modular monolith)
+│   ├── chart/           # Chart generation module
+│   │   ├── services/    # Business logic
+│   │   ├── repositories/# Data access
+│   │   ├── domain/      # Domain models (indicators, drawings)
+│   │   └── interfaces/  # Service contracts
+│   ├── analysis/        # AI analysis module
+│   ├── storage/         # File storage module
+│   └── user/            # User management (future)
+│
+├── core/                # Core infrastructure
+│   ├── database/        # JSON databases & loaders
+│   ├── http/            # HTTP clients
+│   └── di/              # Dependency injection
+│
+├── shared/              # Shared utilities
+│   ├── config/          # Environment configuration
+│   ├── types/           # Common types
+│   └── utils/           # Helper functions
+│
+├── mcp/                 # MCP server & tools
+│   ├── server.ts        # MCP entry point
+│   └── tools/           # 8 MCP tools
+│
+└── api/                 # REST API (future SaaS)
+    ├── routes/          # API endpoints
+    └── middleware/      # Auth, rate limiting
+```
+
+### Module Boundaries
+
+Each module is designed with clear boundaries:
+
+- **Chart Module**: Chart generation, configuration, validation, indicators, drawings
+- **Analysis Module**: AI-powered chart analysis and signal generation (planned)
+- **Storage Module**: File operations, downloads, permanent storage (planned)
+- **User Module**: Authentication, quotas, billing (planned for SaaS)
+
+### Migration Status
+
+🟢 **Completed:**
+- Module structure created
+- Chart module repositories (indicators, drawings)
+- Core infrastructure (database loaders, HTTP client)
+- Service interfaces defined
+
+🟡 **In Progress:**
+- Chart module services (config, generation, validation)
+- Storage module services
+
+⚪ **Planned:**
+- Dependency injection container
+- Analysis module services
+- REST API layer for SaaS
+- Refactor MCP tools to use services
+
+For detailed architecture documentation, see [`.docs/saas-architecture.md`](.docs/saas-architecture.md) and [`.docs/modular-architecture.md`](.docs/modular-architecture.md) (coming soon).
+
+---
+
 ## Claude Code Setup
 
 ### Quick Setup (Recommended)
@@ -326,9 +394,23 @@ npm run mcp
 
 You should see:
 ```
-[MCP Server] chart-img-mcp-server v0.1.0 started
-[MCP Server] Registered 6 tools
+[MCP Server] chart-img-mcp-server v0.1.1 started
+[MCP Server] Registered 8 tools
 ```
+
+**Debug**:
+```bash
+# Test MCP server
+npm run mcp
+
+# Build project (includes all modules)
+npm run build
+
+# Check module structure
+ls -la src/modules/
+```
+
+**Note**: The project is undergoing modular restructuring. If you encounter import errors, ensure you've run `npm run build` after pulling latest changes.
 
 ### "Invalid API key error"
 
@@ -466,8 +548,10 @@ Override in Claude config if needed:
 ## Support
 
 ### Documentation
-- **Architecture**: See `.docs/architecture.md`
+- **Modular Architecture**: See `.docs/saas-architecture.md` (modular monolith design)
+- **MCP Architecture**: See `.docs/architecture.md` (MCP server internals)
 - **Tools Reference**: See `.docs/mcp-tools.md`
+- **Chart Drawings**: See `.docs/chart-drawings.md`
 - **API Integration**: See `.docs/api-integration.md`
 - **Examples**: See `.docs/examples.md`
 - **Deployment**: See `.docs/deployment.md`
@@ -480,6 +564,19 @@ Override in Claude config if needed:
 ---
 
 ## What's Next?
+
+### For Contributors
+
+The project is being restructured into a modular monolith:
+
+1. **Review the architecture**: Check `.docs/saas-architecture.md` for the full design
+2. **Understand modules**: Each module (`chart/`, `analysis/`, `storage/`, `user/`) has clear responsibilities
+3. **Follow patterns**: Use repository pattern for data access, service layer for business logic
+4. **Dependency injection**: Services will be injected via DI container (coming soon)
+
+Current focus: Creating service layer and refactoring MCP tools to use services.
+
+### For Users
 
 Now that you're connected:
 
@@ -496,10 +593,13 @@ Happy charting! 📈🚀
 ## Changelog
 
 ### v0.1.1 (Current)
-- ✅ **7 MCP tools** (added health_check for diagnostics)
+- ✅ **Modular monolith architecture** - Restructured for scalability and SaaS readiness
+- ✅ **8 MCP tools** (added save_chart_image + health_check)
+- ✅ **Chart module** - Repositories, domain models, service interfaces
+- ✅ **Core infrastructure** - Centralized database loaders, HTTP clients, config
 - ✅ **Claude Code support** with project-scoped configuration
+- ✅ **Chart drawings support** - Horizontal lines, trend lines, positions, orders
 - ✅ **Fixed tsx integration** (replaced ts-node)
-- ✅ **Improved error handling** and connection reliability
 - 100+ technical indicators
 - Multiple asset classes supported
 - Rate limiting and caching

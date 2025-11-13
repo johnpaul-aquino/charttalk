@@ -1,0 +1,2006 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-10-31",
+  "totalCount": 90,
+  "addedCount": 90,
+  "indicators": [
+    {
+      "id": "accumulation-distribution",
+      "name": "Accumulation/Distribution",
+      "category": "Volume",
+      "inputs": [],
+      "keywords": ["accumulation", "distribution", "ad", "volume"],
+      "tested": false,
+      "notes": "No input parameters required"
+    },
+    {
+      "id": "accumulative-swing-index",
+      "name": "Accumulative Swing Index",
+      "category": "Volume",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "limitMove",
+          "type": "number",
+          "default": 10,
+          "min": 0.1,
+          "max": 1000,
+          "description": "Limit move value"
+        }
+      ],
+      "keywords": ["accumulative", "swing", "index", "asi"],
+      "tested": false
+    },
+    {
+      "id": "advance-decline",
+      "name": "Advance/Decline",
+      "category": "Advanced",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["advance", "decline", "ad"],
+      "tested": false
+    },
+    {
+      "id": "arnaud-legoux-moving-average",
+      "name": "Arnaud Legoux Moving Average",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "Window size"
+        },
+        {
+          "param": "in_1",
+          "name": "offset",
+          "type": "number",
+          "default": 0.85,
+          "min": 0,
+          "max": 10,
+          "description": "Offset value"
+        },
+        {
+          "param": "in_2",
+          "name": "sigma",
+          "type": "number",
+          "default": 6,
+          "min": 0.1,
+          "max": 100,
+          "description": "Sigma value"
+        }
+      ],
+      "keywords": ["arnaud", "legoux", "aloma"],
+      "tested": false
+    },
+    {
+      "id": "aroon",
+      "name": "Aroon",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["aroon", "trend"],
+      "tested": false
+    },
+    {
+      "id": "average-directional-index",
+      "name": "Average Directional Index",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "ADX period length"
+        }
+      ],
+      "keywords": ["average", "directional", "index", "adx"],
+      "tested": false
+    },
+    {
+      "id": "average-true-range",
+      "name": "Average True Range",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 2000,
+          "description": "ATR period length"
+        }
+      ],
+      "keywords": ["average", "true", "range", "atr", "volatility"],
+      "tested": true,
+      "notes": "Commonly used, verified working"
+    },
+    {
+      "id": "awesome-oscillator",
+      "name": "Awesome Oscillator",
+      "category": "Momentum",
+      "inputs": [],
+      "keywords": ["awesome", "oscillator", "ao"],
+      "tested": false,
+      "notes": "No input parameters required"
+    },
+    {
+      "id": "balance-of-power",
+      "name": "Balance of Power",
+      "category": "Momentum",
+      "inputs": [],
+      "keywords": ["balance", "power", "bop"],
+      "tested": false,
+      "notes": "No input parameters required"
+    },
+    {
+      "id": "bollinger-bands",
+      "name": "Bollinger Bands",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 5000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_2",
+          "name": "stdDev",
+          "type": "number",
+          "default": 2,
+          "min": 0.1,
+          "max": 100,
+          "description": "Standard deviation multiplier"
+        }
+      ],
+      "keywords": ["bollinger", "bands", "bb", "volatility"],
+      "tested": true,
+      "notes": "Use in_0 and in_2, omit in_1 (causes 422 error)"
+    },
+    {
+      "id": "bollinger-bands-percent-b",
+      "name": "Bollinger Bands %B",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 5000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_2",
+          "name": "stdDev",
+          "type": "number",
+          "default": 2,
+          "min": 0.1,
+          "max": 100,
+          "description": "Standard deviation"
+        }
+      ],
+      "keywords": ["bollinger", "percent", "%b"],
+      "tested": false
+    },
+    {
+      "id": "bollinger-bands-width",
+      "name": "Bollinger Bands Width",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 5000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_2",
+          "name": "stdDev",
+          "type": "number",
+          "default": 2,
+          "min": 0.1,
+          "max": 100,
+          "description": "Standard deviation"
+        }
+      ],
+      "keywords": ["bollinger", "bands", "width"],
+      "tested": false
+    },
+    {
+      "id": "chaikin-money-flow",
+      "name": "Chaikin Money Flow",
+      "category": "Volume",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["chaikin", "money", "flow", "cmf"],
+      "tested": false
+    },
+    {
+      "id": "chaikin-oscillator",
+      "name": "Chaikin Oscillator",
+      "category": "Volume",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "fastLength",
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 1000,
+          "description": "Fast EMA length"
+        },
+        {
+          "param": "in_1",
+          "name": "slowLength",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "Slow EMA length"
+        }
+      ],
+      "keywords": ["chaikin", "oscillator"],
+      "tested": false
+    },
+    {
+      "id": "chaikin-volatility",
+      "name": "Chaikin Volatility",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["chaikin", "volatility"],
+      "tested": false
+    },
+    {
+      "id": "chande-kroll-stop",
+      "name": "Chande Kroll Stop",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "offset",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 100,
+          "description": "Offset value"
+        }
+      ],
+      "keywords": ["chande", "kroll", "stop"],
+      "tested": false
+    },
+    {
+      "id": "chande-momentum-oscillator",
+      "name": "Chande Momentum Oscillator",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["chande", "momentum", "oscillator", "cmo"],
+      "tested": false
+    },
+    {
+      "id": "chop-zone",
+      "name": "Chop Zone",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["chop", "zone", "volatility"],
+      "tested": false
+    },
+    {
+      "id": "choppiness-index",
+      "name": "Choppiness Index",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["choppiness", "index", "chop"],
+      "tested": false
+    },
+    {
+      "id": "commodity-channel-index",
+      "name": "Commodity Channel Index",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["commodity", "channel", "index", "cci"],
+      "tested": false
+    },
+    {
+      "id": "connors-rsi",
+      "name": "Connors RSI",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "rsiLength",
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 1000,
+          "description": "RSI period length"
+        },
+        {
+          "param": "in_1",
+          "name": "upDownLength",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 1000,
+          "description": "Up/Down period"
+        },
+        {
+          "param": "in_2",
+          "name": "rocLength",
+          "type": "number",
+          "default": 100,
+          "min": 1,
+          "max": 1000,
+          "description": "Rate of Change period"
+        }
+      ],
+      "keywords": ["connors", "rsi", "momentum"],
+      "tested": false
+    },
+    {
+      "id": "coppock-curve",
+      "name": "Coppock Curve",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "rocLength1",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "First ROC length"
+        },
+        {
+          "param": "in_1",
+          "name": "rocLength2",
+          "type": "number",
+          "default": 11,
+          "min": 1,
+          "max": 1000,
+          "description": "Second ROC length"
+        },
+        {
+          "param": "in_2",
+          "name": "smaLength",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "SMA period"
+        }
+      ],
+      "keywords": ["coppock", "curve", "momentum"],
+      "tested": false
+    },
+    {
+      "id": "detrended-price-oscillator",
+      "name": "Detrended Price Oscillator",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 21,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["detrended", "price", "oscillator", "dpo"],
+      "tested": false
+    },
+    {
+      "id": "directional-movement",
+      "name": "Directional Movement",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "ADX smoothing period"
+        }
+      ],
+      "keywords": ["directional", "movement", "dm"],
+      "tested": false
+    },
+    {
+      "id": "donchian-channels",
+      "name": "Donchian Channels",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["donchian", "channels", "volatility"],
+      "tested": false
+    },
+    {
+      "id": "double-ema",
+      "name": "Double EMA",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["double", "ema", "exponential", "moving", "average"],
+      "tested": false
+    },
+    {
+      "id": "ease-of-movement",
+      "name": "Ease of Movement",
+      "category": "Volume",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "divisor",
+          "type": "number",
+          "default": 10000,
+          "min": 1,
+          "max": 100000,
+          "description": "Scale divisor"
+        }
+      ],
+      "keywords": ["ease", "movement", "eom"],
+      "tested": false
+    },
+    {
+      "id": "elders-force-index",
+      "name": "Elder's Force Index",
+      "category": "Volume",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 13,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["elder", "force", "index", "efi"],
+      "tested": false
+    },
+    {
+      "id": "envelopes",
+      "name": "Envelopes",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Moving average period"
+        },
+        {
+          "param": "in_1",
+          "name": "percent",
+          "type": "number",
+          "default": 10,
+          "min": 0.1,
+          "max": 100,
+          "description": "Percentage offset"
+        },
+        {
+          "param": "in_2",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["envelopes", "volatility"],
+      "tested": false
+    },
+    {
+      "id": "exponential-moving-average",
+      "name": "Exponential Moving Average",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["exponential", "moving", "average", "ema"],
+      "tested": true,
+      "notes": "Commonly used, verified working"
+    },
+    {
+      "id": "fisher-transform",
+      "name": "Fisher Transform",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["fisher", "transform", "momentum"],
+      "tested": false
+    },
+    {
+      "id": "historical-volatility",
+      "name": "Historical Volatility",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["historical", "volatility"],
+      "tested": false
+    },
+    {
+      "id": "hull-moving-average",
+      "name": "Hull Moving Average",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["hull", "moving", "average", "hma"],
+      "tested": false
+    },
+    {
+      "id": "ichimoku-cloud",
+      "name": "Ichimoku Cloud",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "conversion",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "Conversion line period"
+        },
+        {
+          "param": "in_1",
+          "name": "base",
+          "type": "number",
+          "default": 26,
+          "min": 1,
+          "max": 1000,
+          "description": "Base line period"
+        },
+        {
+          "param": "in_2",
+          "name": "spanB",
+          "type": "number",
+          "default": 52,
+          "min": 1,
+          "max": 1000,
+          "description": "Leading Span B period"
+        },
+        {
+          "param": "in_3",
+          "name": "displacement",
+          "type": "number",
+          "default": 26,
+          "min": 0,
+          "max": 1000,
+          "description": "Displacement value"
+        }
+      ],
+      "keywords": ["ichimoku", "cloud", "trend"],
+      "tested": true,
+      "notes": "Commonly used, verified working"
+    },
+    {
+      "id": "keltner-channels",
+      "name": "Keltner Channels",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "EMA period"
+        },
+        {
+          "param": "in_1",
+          "name": "multiplier",
+          "type": "number",
+          "default": 1,
+          "min": 0.1,
+          "max": 10,
+          "description": "ATR multiplier"
+        },
+        {
+          "param": "in_2",
+          "name": "atrLength",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "ATR period"
+        }
+      ],
+      "keywords": ["keltner", "channels", "volatility"],
+      "tested": false
+    },
+    {
+      "id": "klinger-oscillator",
+      "name": "Klinger Oscillator",
+      "category": "Volume",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "fastLength",
+          "type": "number",
+          "default": 34,
+          "min": 1,
+          "max": 1000,
+          "description": "Fast EMA length"
+        },
+        {
+          "param": "in_1",
+          "name": "slowLength",
+          "type": "number",
+          "default": 55,
+          "min": 1,
+          "max": 1000,
+          "description": "Slow EMA length"
+        },
+        {
+          "param": "in_2",
+          "name": "signalLength",
+          "type": "number",
+          "default": 13,
+          "min": 1,
+          "max": 1000,
+          "description": "Signal line length"
+        }
+      ],
+      "keywords": ["klinger", "oscillator", "volume"],
+      "tested": false
+    },
+    {
+      "id": "know-sure-thing",
+      "name": "Know Sure Thing",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "roc1",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "First ROC period"
+        },
+        {
+          "param": "in_1",
+          "name": "roc2",
+          "type": "number",
+          "default": 15,
+          "min": 1,
+          "max": 1000,
+          "description": "Second ROC period"
+        },
+        {
+          "param": "in_2",
+          "name": "roc3",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Third ROC period"
+        },
+        {
+          "param": "in_3",
+          "name": "roc4",
+          "type": "number",
+          "default": 30,
+          "min": 1,
+          "max": 1000,
+          "description": "Fourth ROC period"
+        }
+      ],
+      "keywords": ["know", "sure", "thing", "kst"],
+      "tested": false
+    },
+    {
+      "id": "least-squares-moving-average",
+      "name": "Least Squares Moving Average",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["least", "squares", "moving", "average", "lsma"],
+      "tested": false
+    },
+    {
+      "id": "linear-regression-curve",
+      "name": "Linear Regression Curve",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["linear", "regression", "curve"],
+      "tested": false
+    },
+    {
+      "id": "linear-regression-slope",
+      "name": "Linear Regression Slope",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["linear", "regression", "slope"],
+      "tested": false
+    },
+    {
+      "id": "ma-cross",
+      "name": "MA Cross",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "fastLength",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "Fast MA period"
+        },
+        {
+          "param": "in_1",
+          "name": "slowLength",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Slow MA period"
+        }
+      ],
+      "keywords": ["ma", "cross", "moving", "average"],
+      "tested": false
+    },
+    {
+      "id": "macd",
+      "name": "MACD",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "fastLength",
+          "type": "number",
+          "default": 12,
+          "min": 1,
+          "max": 1000,
+          "description": "Fast EMA period"
+        },
+        {
+          "param": "in_1",
+          "name": "slowLength",
+          "type": "number",
+          "default": 26,
+          "min": 1,
+          "max": 1000,
+          "description": "Slow EMA period"
+        },
+        {
+          "param": "in_2",
+          "name": "signalLength",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "Signal line period"
+        }
+      ],
+      "keywords": ["macd", "moving", "average", "convergence", "divergence", "momentum"],
+      "tested": true
+    },
+    {
+      "id": "majority-rule",
+      "name": "Majority Rule",
+      "category": "Advanced",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["majority", "rule", "voting"],
+      "tested": false
+    },
+    {
+      "id": "mass-index",
+      "name": "Mass Index",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "emaLength",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "EMA period"
+        },
+        {
+          "param": "in_1",
+          "name": "sumLength",
+          "type": "number",
+          "default": 25,
+          "min": 1,
+          "max": 1000,
+          "description": "Sum period"
+        }
+      ],
+      "keywords": ["mass", "index", "volatility"],
+      "tested": false
+    },
+    {
+      "id": "mcginley-dynamic",
+      "name": "McGinley Dynamic",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["mcginley", "dynamic", "moving", "average"],
+      "tested": false
+    },
+    {
+      "id": "momentum",
+      "name": "Momentum",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["momentum", "rate", "change"],
+      "tested": false
+    },
+    {
+      "id": "money-flow-index",
+      "name": "Money Flow Index",
+      "category": "Volume",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["money", "flow", "index", "mfi", "volume"],
+      "tested": false
+    },
+    {
+      "id": "moon-phases",
+      "name": "Moon Phases",
+      "category": "Advanced",
+      "inputs": [],
+      "keywords": ["moon", "phases", "lunar"],
+      "tested": false
+    },
+    {
+      "id": "moving-average",
+      "name": "Moving Average",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["moving", "average", "ma", "sma"],
+      "tested": true
+    },
+    {
+      "id": "moving-average-adaptive",
+      "name": "Moving Average Adaptive",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 50,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["moving", "average", "adaptive", "kama"],
+      "tested": false
+    },
+    {
+      "id": "moving-average-channel",
+      "name": "Moving Average Channel",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "offset",
+          "type": "number",
+          "default": 0,
+          "min": -100,
+          "max": 100,
+          "description": "Channel offset"
+        }
+      ],
+      "keywords": ["moving", "average", "channel", "envelope"],
+      "tested": false
+    },
+    {
+      "id": "moving-average-double",
+      "name": "Moving Average Double",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["moving", "average", "double", "dema"],
+      "tested": false
+    },
+    {
+      "id": "moving-average-exponential",
+      "name": "Moving Average Exponential",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["moving", "average", "exponential", "ema"],
+      "tested": true
+    },
+    {
+      "id": "moving-average-hamming",
+      "name": "Moving Average Hamming",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["moving", "average", "hamming", "window"],
+      "tested": false
+    },
+    {
+      "id": "moving-average-multiple",
+      "name": "Moving Average Multiple",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length1",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "First MA period"
+        },
+        {
+          "param": "in_1",
+          "name": "length2",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Second MA period"
+        }
+      ],
+      "keywords": ["moving", "average", "multiple", "dual"],
+      "tested": false
+    },
+    {
+      "id": "moving-average-triple",
+      "name": "Moving Average Triple",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["moving", "average", "triple", "tema"],
+      "tested": false
+    },
+    {
+      "id": "moving-average-weighted",
+      "name": "Moving Average Weighted",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["moving", "average", "weighted", "wma"],
+      "tested": false
+    },
+    {
+      "id": "net-volume",
+      "name": "Net Volume",
+      "category": "Volume",
+      "inputs": [],
+      "keywords": ["net", "volume", "on-balance"],
+      "tested": false
+    },
+    {
+      "id": "on-balance-volume",
+      "name": "On Balance Volume",
+      "category": "Volume",
+      "inputs": [],
+      "keywords": ["on", "balance", "volume", "obv"],
+      "tested": false
+    },
+    {
+      "id": "parabolic-sar",
+      "name": "Parabolic SAR",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "start",
+          "type": "number",
+          "default": 0.02,
+          "min": 0.001,
+          "max": 1,
+          "description": "SAR start value"
+        },
+        {
+          "param": "in_1",
+          "name": "increment",
+          "type": "number",
+          "default": 0.02,
+          "min": 0.001,
+          "max": 1,
+          "description": "SAR increment"
+        },
+        {
+          "param": "in_2",
+          "name": "maximum",
+          "type": "number",
+          "default": 0.2,
+          "min": 0.001,
+          "max": 1,
+          "description": "SAR maximum value"
+        }
+      ],
+      "keywords": ["parabolic", "sar", "stop", "reverse"],
+      "tested": false
+    },
+    {
+      "id": "pivot-points-standard",
+      "name": "Pivot Points Standard",
+      "category": "Support/Resistance",
+      "inputs": [],
+      "keywords": ["pivot", "points", "support", "resistance"],
+      "tested": false
+    },
+    {
+      "id": "price-oscillator",
+      "name": "Price Oscillator",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "shortLength",
+          "type": "number",
+          "default": 12,
+          "min": 1,
+          "max": 1000,
+          "description": "Short EMA period"
+        },
+        {
+          "param": "in_1",
+          "name": "longLength",
+          "type": "number",
+          "default": 26,
+          "min": 1,
+          "max": 1000,
+          "description": "Long EMA period"
+        }
+      ],
+      "keywords": ["price", "oscillator", "po"],
+      "tested": false
+    },
+    {
+      "id": "relative-strength-index",
+      "name": "Relative Strength Index",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["relative", "strength", "index", "rsi"],
+      "tested": true
+    },
+    {
+      "id": "relative-vigor-index",
+      "name": "Relative Vigor Index",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["relative", "vigor", "index", "rvi"],
+      "tested": false
+    },
+    {
+      "id": "roc-rate-of-change",
+      "name": "ROC (Rate of Change)",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 12,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["roc", "rate", "change", "momentum"],
+      "tested": false
+    },
+    {
+      "id": "rsi-divergence",
+      "name": "RSI Divergence",
+      "category": "Advanced",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "rsiLength",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "RSI period length"
+        }
+      ],
+      "keywords": ["rsi", "divergence", "advanced"],
+      "tested": false
+    },
+    {
+      "id": "sawtooth-wave",
+      "name": "Sawtooth Wave",
+      "category": "Advanced",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["sawtooth", "wave", "oscillator"],
+      "tested": false
+    },
+    {
+      "id": "simple-moving-average",
+      "name": "Simple Moving Average",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        },
+        {
+          "param": "in_1",
+          "name": "source",
+          "type": "source",
+          "default": "close",
+          "options": ["open", "high", "low", "close", "hl2", "hlc3", "ohlc4"],
+          "description": "Price source"
+        }
+      ],
+      "keywords": ["simple", "moving", "average", "sma"],
+      "tested": false
+    },
+    {
+      "id": "smi-ergodic-indicator",
+      "name": "SMI Ergodic Indicator",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "longLength",
+          "type": "number",
+          "default": 25,
+          "min": 1,
+          "max": 1000,
+          "description": "Long period"
+        },
+        {
+          "param": "in_1",
+          "name": "shortLength",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 1000,
+          "description": "Short period"
+        }
+      ],
+      "keywords": ["smi", "ergodic", "indicator"],
+      "tested": false
+    },
+    {
+      "id": "stochastic-momentum-index",
+      "name": "Stochastic Momentum Index",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "period",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "SMI period"
+        },
+        {
+          "param": "in_1",
+          "name": "smoothK",
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 100,
+          "description": "K smoothing period"
+        },
+        {
+          "param": "in_2",
+          "name": "smoothD",
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 100,
+          "description": "D smoothing period"
+        }
+      ],
+      "keywords": ["stochastic", "momentum", "index", "smi"],
+      "tested": false
+    },
+    {
+      "id": "stochastic-oscillator",
+      "name": "Stochastic Oscillator",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "kPeriod",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "%K period"
+        },
+        {
+          "param": "in_1",
+          "name": "smoothK",
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 100,
+          "description": "%K smoothing"
+        },
+        {
+          "param": "in_2",
+          "name": "smoothD",
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 100,
+          "description": "%D smoothing"
+        }
+      ],
+      "keywords": ["stochastic", "oscillator", "stoch"],
+      "tested": true
+    },
+    {
+      "id": "supertrend",
+      "name": "Supertrend",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "period",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 1000,
+          "description": "ATR period"
+        },
+        {
+          "param": "in_1",
+          "name": "multiplier",
+          "type": "number",
+          "default": 3,
+          "min": 0.1,
+          "max": 10,
+          "description": "ATR multiplier"
+        }
+      ],
+      "keywords": ["supertrend", "trend", "atr"],
+      "tested": false
+    },
+    {
+      "id": "tdfi",
+      "name": "TDFI",
+      "category": "Advanced",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 5,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["tdfi", "trend", "detection"],
+      "tested": false
+    },
+    {
+      "id": "tema",
+      "name": "TEMA",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["tema", "triple", "exponential", "moving", "average"],
+      "tested": false
+    },
+    {
+      "id": "true-range",
+      "name": "True Range",
+      "category": "Volatility",
+      "inputs": [],
+      "keywords": ["true", "range", "volatility"],
+      "tested": false
+    },
+    {
+      "id": "typical-price",
+      "name": "Typical Price",
+      "category": "Advanced",
+      "inputs": [],
+      "keywords": ["typical", "price", "hl2"],
+      "tested": false
+    },
+    {
+      "id": "ulcer-index",
+      "name": "Ulcer Index",
+      "category": "Volatility",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["ulcer", "index", "volatility"],
+      "tested": false
+    },
+    {
+      "id": "volume-oscillator",
+      "name": "Volume Oscillator",
+      "category": "Volume",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "fastLength",
+          "type": "number",
+          "default": 12,
+          "min": 1,
+          "max": 1000,
+          "description": "Fast EMA period"
+        },
+        {
+          "param": "in_1",
+          "name": "slowLength",
+          "type": "number",
+          "default": 26,
+          "min": 1,
+          "max": 1000,
+          "description": "Slow EMA period"
+        }
+      ],
+      "keywords": ["volume", "oscillator", "vo"],
+      "tested": false
+    },
+    {
+      "id": "volume-profile-visible-range",
+      "name": "Volume Profile Visible Range",
+      "category": "Volume",
+      "inputs": [],
+      "keywords": ["volume", "profile", "visible", "range", "vpvr"],
+      "tested": false
+    },
+    {
+      "id": "volume-weighted-average-price",
+      "name": "Volume Weighted Average Price",
+      "category": "Volume",
+      "inputs": [],
+      "keywords": ["volume", "weighted", "average", "price", "vwap"],
+      "tested": false
+    },
+    {
+      "id": "williams-percent-range",
+      "name": "Williams %R",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "period",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "Lookback period"
+        }
+      ],
+      "keywords": ["williams", "percent", "range", "wpr"],
+      "tested": false
+    },
+    {
+      "id": "williams-alligator",
+      "name": "Williams Alligator",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "jawPeriod",
+          "type": "number",
+          "default": 13,
+          "min": 1,
+          "max": 1000,
+          "description": "Jaw period"
+        },
+        {
+          "param": "in_1",
+          "name": "teethPeriod",
+          "type": "number",
+          "default": 8,
+          "min": 1,
+          "max": 1000,
+          "description": "Teeth period"
+        },
+        {
+          "param": "in_2",
+          "name": "lipsPeriod",
+          "type": "number",
+          "default": 5,
+          "min": 1,
+          "max": 1000,
+          "description": "Lips period"
+        }
+      ],
+      "keywords": ["williams", "alligator", "trend"],
+      "tested": false
+    },
+    {
+      "id": "woodies-cci",
+      "name": "Woodies CCI",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "cciPeriod",
+          "type": "number",
+          "default": 14,
+          "min": 1,
+          "max": 1000,
+          "description": "CCI period"
+        },
+        {
+          "param": "in_1",
+          "name": "rmaPeriod",
+          "type": "number",
+          "default": 35,
+          "min": 1,
+          "max": 1000,
+          "description": "RMA period"
+        }
+      ],
+      "keywords": ["woodies", "cci", "commodity", "channel"],
+      "tested": false
+    },
+    {
+      "id": "wave-trend-oscillator",
+      "name": "Wave Trend Oscillator",
+      "category": "Momentum",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "period",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 1000,
+          "description": "Wave period"
+        }
+      ],
+      "keywords": ["wave", "trend", "oscillator", "wto"],
+      "tested": false
+    },
+    {
+      "id": "weighted-moving-average",
+      "name": "Weighted Moving Average",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["weighted", "moving", "average", "wma"],
+      "tested": false
+    },
+    {
+      "id": "x-average",
+      "name": "X-Average",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["x-average", "average"],
+      "tested": false
+    },
+    {
+      "id": "wad",
+      "name": "Williams Accumulation Distribution",
+      "category": "Volume",
+      "inputs": [],
+      "keywords": ["williams", "accumulation", "distribution", "wad"],
+      "tested": false
+    },
+    {
+      "id": "yield-curve",
+      "name": "Yield Curve",
+      "category": "Advanced",
+      "inputs": [],
+      "keywords": ["yield", "curve", "bonds"],
+      "tested": false
+    },
+    {
+      "id": "zero-lag-moving-average",
+      "name": "Zero Lag Moving Average",
+      "category": "Trend",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "length",
+          "type": "number",
+          "default": 20,
+          "min": 1,
+          "max": 1000,
+          "description": "Period length"
+        }
+      ],
+      "keywords": ["zero", "lag", "moving", "average", "zlma"],
+      "tested": false
+    },
+    {
+      "id": "zigzag",
+      "name": "Zig Zag",
+      "category": "Support/Resistance",
+      "inputs": [
+        {
+          "param": "in_0",
+          "name": "percentThreshold",
+          "type": "number",
+          "default": 5,
+          "min": 0.1,
+          "max": 100,
+          "description": "Percentage threshold"
+        }
+      ],
+      "keywords": ["zigzag", "zig", "zag", "pattern"],
+      "tested": false
+    }
+  ],
+  "progress": {
+    "total": 90,
+    "added": 90,
+    "remaining": 0,
+    "batches": [
+      {
+        "batchNumber": 1,
+        "count": 20,
+        "range": "Accumulation/Distribution - Commodity Channel Index",
+        "completed": true,
+        "dateAdded": "2025-10-27"
+      },
+      {
+        "batchNumber": 2,
+        "count": 20,
+        "range": "Connors RSI - MA Cross",
+        "completed": true,
+        "dateAdded": "2025-10-27"
+      },
+      {
+        "batchNumber": 3,
+        "count": 20,
+        "range": "MA Cross - Parabolic SAR",
+        "completed": true,
+        "dateAdded": "2025-10-31"
+      },
+      {
+        "batchNumber": 4,
+        "count": 20,
+        "range": "Pivot Points Standard - Volume Weighted Average Price",
+        "completed": true,
+        "dateAdded": "2025-10-31"
+      },
+      {
+        "batchNumber": 5,
+        "count": 10,
+        "range": "Williams %R - Zig Zag",
+        "completed": true,
+        "dateAdded": "2025-10-31",
+        "note": "Final batch - all 90 indicators complete"
+      }
+    ]
+  }
+}

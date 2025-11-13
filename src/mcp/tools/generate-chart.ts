@@ -5,7 +5,12 @@
  */
 
 import { z } from 'zod';
-import { createChartImgClient, type ChartConfig, type ChartResponse } from '../utils/chart-img-client.js';
+import { container, CHART_GENERATION_SERVICE } from '../../core/di';
+import type {
+  IChartGenerationService,
+  ChartConfig,
+  ChartGenerationResult
+} from '../../modules/chart';
 import path from 'path';
 import os from 'os';
 
@@ -35,8 +40,8 @@ export const GenerateChartInputSchema = z.object({
 
 export type GenerateChartInput = z.infer<typeof GenerateChartInputSchema>;
 
-// Output matches ChartResponse
-export type GenerateChartOutput = ChartResponse;
+// Output matches ChartGenerationResult
+export type GenerateChartOutput = ChartGenerationResult;
 
 /**
  * Generate chart tool handler
@@ -45,7 +50,8 @@ export async function generateChartTool(
   input: GenerateChartInput
 ): Promise<GenerateChartOutput> {
   try {
-    const client = createChartImgClient();
+    // Resolve service from DI container
+    const generationService = container.resolve<IChartGenerationService>(CHART_GENERATION_SERVICE);
     const config = input.config as ChartConfig;
 
     // Special handling for saveToFile mode - use direct file writing to avoid token limits
@@ -57,7 +63,7 @@ export async function generateChartTool(
       const filePath = path.join(tmpDir, filename);
 
       // Generate chart directly to file (no base64 in memory)
-      const result = await client.generateChartToFile(
+      const result = await generationService.generateChartToFile(
         config,
         filePath,
         input.format
@@ -67,7 +73,7 @@ export async function generateChartTool(
     }
 
     // Normal mode: return URL from storage endpoint or base64 data
-    const result = await client.generateChart(
+    const result = await generationService.generateChart(
       config,
       input.storage,
       input.format
