@@ -5,8 +5,9 @@
  */
 
 import { z } from 'zod';
-import { getConfig } from '../../lib/config.js';
-import { createChartImgClient } from '../utils/chart-img-client.js';
+import { getConfig } from '../../shared/config/environment.config';
+import { container, CHART_IMG_CLIENT } from '../../core/di';
+import type { ChartImgClient } from '../utils/chart-img-client';
 import { getCachedDocumentation } from '../utils/doc-parser.js';
 
 // Input schema (no parameters needed)
@@ -54,7 +55,8 @@ export async function healthCheckTool(
     // Check API connection
     let apiConnectionTest = false;
     try {
-      const client = createChartImgClient();
+      // Resolve client from DI container
+      const client = container.resolve<ChartImgClient>(CHART_IMG_CLIENT);
       const testResult = await client.getExchanges();
       apiConnectionTest = testResult.success;
     } catch (error) {

@@ -9,7 +9,10 @@
     "build": "next build",
     "start": "next start -p 3010",
     "lint": "next lint",
-    "mcp": "tsx src/mcp/server.ts"
+    "mcp": "tsx src/mcp/server.ts",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
@@ -26,6 +29,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitest/ui": "^4.0.8",
     "autoprefixer": "^10.4.21",
     "eslint": "^8",
     "eslint-config-next": "14.2.18",
@@ -33,7 +37,8 @@
     "tailwindcss": "^4.1.16",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.8"
   },
   "engines": {
     "node": ">=18.0.0"

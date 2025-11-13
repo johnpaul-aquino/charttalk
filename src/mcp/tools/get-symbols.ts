@@ -5,7 +5,8 @@
  */
 
 import { z } from 'zod';
-import { createChartImgClient } from '../utils/chart-img-client.js';
+import { container, CHART_IMG_CLIENT } from '../../core/di';
+import type { ChartImgClient } from '../utils/chart-img-client';
 
 // Input schema
 export const GetSymbolsInputSchema = z.object({
@@ -55,7 +56,8 @@ export async function getSymbolsTool(
   input: GetSymbolsInput
 ): Promise<GetSymbolsOutput> {
   try {
-    const client = createChartImgClient();
+    // Resolve client from DI container
+    const client = container.resolve<ChartImgClient>(CHART_IMG_CLIENT);
 
     const result = await client.getSymbols(
       input.exchange,

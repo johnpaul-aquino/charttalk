@@ -6,8 +6,8 @@
  */
 
 import { z } from 'zod';
-import fs from 'fs/promises';
-import path from 'path';
+import { container, CHART_STORAGE_SERVICE } from '../../core/di';
+import type { IChartStorageService, SaveImageResult } from '../../modules/storage';
 import os from 'os';
 
 // Input schema
@@ -27,16 +27,8 @@ export const SaveChartImageInputSchema = z.object({
 
 export type SaveChartImageInput = z.infer<typeof SaveChartImageInputSchema>;
 
-// Output
-export interface SaveChartImageOutput {
-  success: boolean;
-  path?: string;
-  error?: string;
-  metadata?: {
-    size: number;
-    savedAt: string;
-  };
-}
+// Output (matches SaveImageResult from storage module)
+export type SaveChartImageOutput = SaveImageResult;
 
 /**
  * Save chart image tool handler
@@ -53,40 +45,20 @@ export async function saveChartImageTool(
       };
     }
 
-    // Generate filename
-    const timestamp = Date.now();
-    const filename = input.filename || `chart-${timestamp}.png`;
-
-    // Ensure filename has proper extension
-    const ext = path.extname(filename);
-    const finalFilename = ext ? filename : `${filename}.png`;
+    // Resolve service from DI container
+    const storageService = container.resolve<IChartStorageService>(CHART_STORAGE_SERVICE);
 
     // Determine directory (default to /tmp)
     const directory = input.directory || os.tmpdir();
 
-    // Full path
-    const filePath = path.join(directory, finalFilename);
+    // Call service method
+    const result = await storageService.saveBase64Image(
+      input.imageData,
+      input.filename,
+      directory
+    );
 
-    // Decode base64 to buffer
-    const imageBuffer = Buffer.from(input.imageData, 'base64');
-
-    // Ensure directory exists
-    await fs.mkdir(directory, { recursive: true });
-
-    // Write file
-    await fs.writeFile(filePath, imageBuffer);
-
-    // Get file stats
-    const stats = await fs.stat(filePath);
-
-    return {
-      success: true,
-      path: filePath,
-      metadata: {
-        size: stats.size,
-        savedAt: new Date().toISOString(),
-      },
-    };
+    return result;
   } catch (error) {
     return {
       success: false,
