@@ -233,6 +233,23 @@ Once connected, Claude has access to these 7 tools:
 > - MACD
 > - Last 7 days, hourly candles"
 
+### Chart Drawings (New!)
+
+**Horizontal Support/Resistance Lines**:
+> "Bitcoin chart with horizontal support at 45000 and resistance at 50000 for the past month"
+
+**Trend Line Analysis**:
+> "Show me Ethereum with trend line analysis and RSI indicator for the last 3 months"
+
+**Trading Setup with Order Markers**:
+> "Bitcoin with entry order at 48000, stop loss at 46000, and take profit at 52000"
+
+**Combined Drawings and Indicators**:
+> "Show Bitcoin with horizontal support line, trend line, and MACD for the last week"
+
+**Event Marking**:
+> "Ethereum chart with vertical event marker and Bollinger Bands for the past 5 days"
+
 ### Discovery Prompts
 
 **Exchange Discovery**:

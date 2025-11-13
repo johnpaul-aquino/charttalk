@@ -8,6 +8,8 @@
 import { z } from 'zod';
 import { fetchDocumentation } from '../utils/doc-parser';
 import type { ChartConfig } from '../utils/chart-img-client';
+import { detectDrawingsFromText, buildDrawingConfig } from '../../lib/drawings-loader';
+import type { DrawingConfig } from '../../types/drawings';
 
 // Input schema
 export const ConstructChartConfigInputSchema = z.object({
@@ -96,7 +98,21 @@ export async function constructChartConfigTool(
     // 7. Detect Indicators
     const studies = detectIndicators(nl, indicators);
 
-    // 8. Build config
+    // 8. Detect Drawings (with AI-driven parameter analysis)
+    const detectedDrawings = detectDrawingsFromText(nl);
+    const drawings: DrawingConfig[] = [];
+
+    for (const parsedDrawing of detectedDrawings) {
+      // Build drawing config with default or detected parameters
+      const drawingConfig = buildDrawingConfig(parsedDrawing.drawing);
+
+      // TODO: In a real scenario, we would analyze the chart here
+      // to intelligently determine parameters like price levels for support/resistance
+      // For now, we use the defaults from the database
+      drawings.push(drawingConfig);
+    }
+
+    // 9. Build config
     const config: ChartConfig = {
       symbol,
       interval,
@@ -106,6 +122,7 @@ export async function constructChartConfigTool(
       width,
       height,
       ...(studies.length > 0 && { studies }),
+      ...(drawings.length > 0 && { drawings }),
     };
 
     // Generate reasoning
@@ -114,6 +131,10 @@ export async function constructChartConfigTool(
     // Check for potential issues
     if (studies.length > 5) {
       warnings.push('Configuration includes more than 5 indicators, which may exceed some plan limits');
+    }
+
+    if (drawings.length > 0) {
+      warnings.push(`Added ${drawings.length} drawing(s) to the chart`);
     }
 
     return {

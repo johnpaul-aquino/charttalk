@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import { fetchDocumentation } from '../utils/doc-parser.js';
 import type { ChartConfig } from '../utils/chart-img-client.js';
+import { getAllDrawings, validateDrawingInput } from '../../lib/drawings-loader';
 
 // Input schema
 export const ValidateConfigInputSchema = z.object({
@@ -156,14 +157,53 @@ export async function validateConfigTool(
     );
   }
 
-  // 9. Validate drawings count (if applicable)
+  // 9. Validate drawings count and parameters
   const drawingCount = config.drawings?.length || 0;
   if (drawingCount > maxStudies) {
     errors.push({
       field: 'drawings',
-      message: `Drawing count (${drawingCount}) may exceed plan limits`,
+      message: `Drawing count (${drawingCount}) may exceed plan limits (max: ${maxStudies})`,
       severity: 'warning',
     });
+  }
+
+  // Validate individual drawing parameters
+  if (config.drawings && config.drawings.length > 0) {
+    const allDrawings = getAllDrawings();
+    for (let i = 0; i < config.drawings.length; i++) {
+      const drawing = config.drawings[i];
+      const drawingDef = allDrawings.find(d => d.name === drawing.name);
+
+      if (drawingDef) {
+        // Validate input parameters
+        const inputErrors = validateDrawingInput(drawingDef, drawing.input);
+        for (const error of inputErrors) {
+          errors.push({
+            field: `drawings[${i}]`,
+            message: error,
+            severity: 'error',
+          });
+        }
+      } else {
+        errors.push({
+          field: `drawings[${i}]`,
+          message: `Unknown drawing type: ${drawing.name}`,
+          severity: 'warning',
+        });
+      }
+
+      // Validate color format in overrides
+      if (drawing.override?.lineColor) {
+        const colorValue = drawing.override.lineColor;
+        if (!isValidColorFormat(colorValue)) {
+          errors.push({
+            field: `drawings[${i}].override.lineColor`,
+            message: `Invalid color format: "${colorValue}". Use RGB (e.g., "rgb(255,0,0)") or RGBA (e.g., "rgba(255,0,0,0.5)")`,
+            severity: 'error',
+          });
+        }
+      }
+    }
   }
 
   // 10. Validate indicator names (if available)
@@ -214,6 +254,35 @@ function parseResolution(resolution: string): { width: number; height: number } 
     };
   }
   return { width: 1920, height: 1080 };
+}
+
+/**
+ * Validate RGB/RGBA color format
+ */
+function isValidColorFormat(color: string): boolean {
+  // Match RGB: rgb(r,g,b) where r,g,b are 0-255
+  const rgbRegex = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/;
+  // Match RGBA: rgba(r,g,b,a) where r,g,b are 0-255 and a is 0-1
+  const rgbaRegex = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0?\.\d+|1\.0|1)\s*\)$/;
+
+  const rgbMatch = color.match(rgbRegex);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1]);
+    const g = parseInt(rgbMatch[2]);
+    const b = parseInt(rgbMatch[3]);
+    return r <= 255 && g <= 255 && b <= 255;
+  }
+
+  const rgbaMatch = color.match(rgbaRegex);
+  if (rgbaMatch) {
+    const r = parseInt(rgbaMatch[1]);
+    const g = parseInt(rgbaMatch[2]);
+    const b = parseInt(rgbaMatch[3]);
+    const a = parseFloat(rgbaMatch[4]);
+    return r <= 255 && g <= 255 && b <= 255 && a >= 0 && a <= 1;
+  }
+
+  return false;
 }
 
 // Tool definition for MCP server

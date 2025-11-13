@@ -105,7 +105,27 @@ Environment-based configuration:
 - Cache TTL configuration
 - Logging levels
 
-### 5. Next.js API Routes (`src/app/api/`)
+### 5. Data Layer (`src/data/` & `src/lib/`)
+
+Static databases and loaders for chart configuration data:
+
+**indicators.json**:
+- Complete database of 90+ technical indicators
+- Includes: parameters, defaults, ranges, keywords
+- Used by indicators-loader.ts for smart detection
+
+**drawings.json**:
+- Database of 4+ drawing types (Horizontal Line, Trend Line, Vertical Line, Order Line)
+- Includes: inputs, overrides, styling options, keywords
+- Used by drawings-loader.ts for natural language detection
+
+**Loader Utilities**:
+- `indicators-loader.ts`: Load/search indicators database
+- `drawings-loader.ts`: Load/search drawings database
+- Cache databases in memory on first load
+- Provide search, validation, and config building functions
+
+### 6. Next.js API Routes (`src/app/api/`)
 
 Future extensibility for non-MCP use cases:
 - REST API endpoints

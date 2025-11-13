@@ -6,6 +6,9 @@
  */
 
 import fetch from 'node-fetch';
+import fs from 'fs/promises';
+import { pipeline } from 'stream/promises';
+import { createWriteStream } from 'fs';
 
 // Type Definitions
 
@@ -25,9 +28,10 @@ export interface ChartConfig {
     override?: Record<string, any>;
   }>;
   drawings?: Array<{
-    type: string;
-    coordinates: any;
-    style?: any;
+    name: string;
+    input: Record<string, any>;
+    override?: Record<string, any>;
+    zOrder?: number;
   }>;
   override?: Record<string, any>;
 }
@@ -36,6 +40,7 @@ export interface ChartResponse {
   success: boolean;
   imageUrl?: string;
   imageData?: string;
+  localPath?: string;
   metadata: {
     format: string;
     resolution: string;
@@ -269,6 +274,100 @@ export class ChartImgClient {
           },
         };
       }
+    } catch (error) {
+      if (error instanceof ChartImgError) {
+        return {
+          success: false,
+          error: error.details?.error || error.message,
+          metadata: {
+            format: '',
+            resolution: '',
+            generatedAt: new Date().toISOString(),
+          },
+          apiResponse: {
+            statusCode: error.statusCode,
+          },
+        };
+      }
+
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        metadata: {
+          format: '',
+          resolution: '',
+          generatedAt: new Date().toISOString(),
+        },
+        apiResponse: {
+          statusCode: 500,
+        },
+      };
+    }
+  }
+
+  /**
+   * Generate a chart and save directly to file (avoids loading base64 in memory)
+   */
+  async generateChartToFile(
+    config: ChartConfig,
+    filePath: string,
+    format: 'png' | 'jpeg' = 'png'
+  ): Promise<Omit<ChartResponse, 'imageData' | 'imageUrl'>> {
+    await this.rateLimiter.waitIfNeeded();
+
+    const endpoint = '/v2/tradingview/advanced-chart';
+
+    try {
+      const response = await this.retryWithBackoff(async () => {
+        return await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': this.apiKey,
+          },
+          body: JSON.stringify(config),
+        });
+      });
+
+      const statusCode = response.status;
+      const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
+      const rateLimitReset = response.headers.get('x-ratelimit-reset');
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ChartImgError(statusCode, errorData);
+      }
+
+      // Extract metadata first
+      const contentType = response.headers.get('content-type') || 'image/png';
+      const format = contentType.split('/')[1].toUpperCase();
+      const resolution = `${config.width || 1200}x${config.height || 675}`;
+
+      // Stream response body directly to file (never loads into memory)
+      if (!response.body) {
+        throw new Error('Response body is null');
+      }
+
+      await pipeline(
+        response.body as any,
+        createWriteStream(filePath)
+      );
+
+      // Return minimal response with file path as message
+      return {
+        success: true,
+        imageUrl: `Chart saved to: ${filePath}`,
+        metadata: {
+          format,
+          resolution,
+          generatedAt: new Date().toISOString(),
+        },
+        apiResponse: {
+          statusCode,
+          rateLimitRemaining: rateLimitRemaining ? parseInt(rateLimitRemaining) : undefined,
+          rateLimitReset: rateLimitReset ? parseInt(rateLimitReset) : undefined,
+        },
+      } as ChartResponse;
     } catch (error) {
       if (error instanceof ChartImgError) {
         return {

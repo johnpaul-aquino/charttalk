@@ -52,6 +52,11 @@ import {
   healthCheckToolDefinition,
   HealthCheckInputSchema,
 } from './tools/health-check.js';
+import {
+  saveChartImageTool,
+  saveChartImageToolDefinition,
+  SaveChartImageInputSchema,
+} from './tools/save-chart-image.js';
 
 /**
  * Main server class
@@ -159,6 +164,14 @@ class ChartImgMCPServer {
             };
           }
 
+          case 'save_chart_image': {
+            const validated = SaveChartImageInputSchema.parse(args);
+            const result = await saveChartImageTool(validated);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+            };
+          }
+
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -226,6 +239,11 @@ class ChartImgMCPServer {
         description: generateChartToolDefinition.description,
         inputSchema: generateChartToolDefinition.inputSchema,
       },
+      {
+        name: saveChartImageToolDefinition.name,
+        description: saveChartImageToolDefinition.description,
+        inputSchema: saveChartImageToolDefinition.inputSchema,
+      },
     ];
   }
 
@@ -258,7 +276,7 @@ class ChartImgMCPServer {
     await this.server.connect(transport);
 
     console.error(`[MCP Server] ${this.config.mcp.serverName} v${this.config.mcp.serverVersion} started`);
-    console.error('[MCP Server] Registered 7 tools:');
+    console.error('[MCP Server] Registered 8 tools:');
     console.error('  1. health_check - Server health and status');
     console.error('  2. fetch_chart_documentation - Dynamic doc fetching');
     console.error('  3. get_exchanges - List available exchanges');
@@ -266,6 +284,7 @@ class ChartImgMCPServer {
     console.error('  5. construct_chart_config - Build config from NL');
     console.error('  6. validate_chart_config - Validate configuration');
     console.error('  7. generate_chart_image - Generate chart image');
+    console.error('  8. save_chart_image - Save base64 image to disk');
     console.error('[MCP Server] Ready for requests via stdio');
   }
 }

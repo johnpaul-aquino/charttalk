@@ -1,0 +1,1967 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-07",
+  "totalCount": 6,
+  "addedCount": 6,
+  "drawings": [
+    {
+      "id": "horizontal-line",
+      "name": "Horizontal Line",
+      "type": "Horizontal Line",
+      "category": "Lines",
+      "description": "A fixed horizontal line at a specified price level, useful for marking support and resistance levels",
+      "inputs": [
+        {
+          "param": "price",
+          "name": "price",
+          "type": "number",
+          "required": true,
+          "description": "The y-axis price level where the line is positioned",
+          "unit": "price"
+        },
+        {
+          "param": "text",
+          "name": "text",
+          "type": "string",
+          "required": false,
+          "description": "Optional label text for the horizontal line"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 12,
+          "min": 10,
+          "max": 250,
+          "description": "Font size for label text"
+        },
+        {
+          "param": "lineStyle",
+          "name": "lineStyle",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 5,
+          "description": "Line dash pattern (0=solid, 1=dotted, 2=dashed, 3=dash-dot)"
+        },
+        {
+          "param": "lineWidth",
+          "name": "lineWidth",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 100,
+          "description": "Line thickness in pixels"
+        },
+        {
+          "param": "lineColor",
+          "name": "lineColor",
+          "type": "string",
+          "default": "rgb(41,98,255)",
+          "description": "Line color in RGB or RGBA format"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(41,98,255)",
+          "description": "Text color in RGB or RGBA format"
+        },
+        {
+          "param": "vertLabelAlign",
+          "name": "vertLabelAlign",
+          "type": "string",
+          "default": "top",
+          "description": "Vertical label alignment (top, middle, bottom)"
+        },
+        {
+          "param": "horzLabelAlign",
+          "name": "horzLabelAlign",
+          "type": "string",
+          "default": "center",
+          "description": "Horizontal label alignment (center, left, right)"
+        },
+        {
+          "param": "showPrice",
+          "name": "showPrice",
+          "type": "boolean",
+          "default": true,
+          "description": "Show price label for horizontal line"
+        },
+        {
+          "param": "fontBold",
+          "name": "fontBold",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text bold"
+        },
+        {
+          "param": "fontItalic",
+          "name": "fontItalic",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text italic"
+        }
+      ],
+      "keywords": ["horizontal", "line", "support", "resistance", "level", "price level"],
+      "tested": true,
+      "notes": "Multiple horizontal lines can be added to a single chart. The line extends across the entire visible chart width.",
+      "example": {
+        "name": "Horizontal Line",
+        "input": {
+          "price": 19100,
+          "text": "Line #2"
+        },
+        "override": {
+          "fontSize": 20,
+          "lineStyle": 1,
+          "lineWidth": 4,
+          "lineColor": "rgb(255,122,122)"
+        }
+      }
+    },
+    {
+      "id": "trend-line",
+      "name": "Trend Line",
+      "type": "Trend Line",
+      "category": "Lines",
+      "description": "A diagonal line connecting two price points to identify support/resistance trends and price action",
+      "inputs": [
+        {
+          "param": "startDatetime",
+          "name": "startDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Starting point datetime in ISO8601 format (YYYY-MM-DDTHH:MM:SS.sssZ)",
+          "unit": "time"
+        },
+        {
+          "param": "startPrice",
+          "name": "startPrice",
+          "type": "number",
+          "required": true,
+          "description": "Starting point price level",
+          "unit": "price"
+        },
+        {
+          "param": "endDatetime",
+          "name": "endDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Ending point datetime in ISO8601 format (YYYY-MM-DDTHH:MM:SS.sssZ)",
+          "unit": "time"
+        },
+        {
+          "param": "endPrice",
+          "name": "endPrice",
+          "type": "number",
+          "required": true,
+          "description": "Ending point price level",
+          "unit": "price"
+        },
+        {
+          "param": "text",
+          "name": "text",
+          "type": "string",
+          "required": false,
+          "description": "Optional label text for the trendline"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 14,
+          "min": 10,
+          "max": 250,
+          "description": "Font size for label text"
+        },
+        {
+          "param": "lineStyle",
+          "name": "lineStyle",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 5,
+          "description": "Line dash pattern (0=solid, 1=dotted, 2=dashed, 3=dash-dot)"
+        },
+        {
+          "param": "lineWidth",
+          "name": "lineWidth",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 100,
+          "description": "Line thickness in pixels"
+        },
+        {
+          "param": "lineColor",
+          "name": "lineColor",
+          "type": "string",
+          "default": "rgb(41,98,255)",
+          "description": "Line color in RGB or RGBA format"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(41,98,255)",
+          "description": "Text color in RGB or RGBA format"
+        },
+        {
+          "param": "horzLabelAlign",
+          "name": "horzLabelAlign",
+          "type": "string",
+          "default": "center",
+          "description": "Horizontal label alignment (center, left, right)"
+        },
+        {
+          "param": "vertLabelAlign",
+          "name": "vertLabelAlign",
+          "type": "string",
+          "default": "top",
+          "description": "Vertical label alignment (top, middle, bottom)"
+        },
+        {
+          "param": "showLabel",
+          "name": "showLabel",
+          "type": "boolean",
+          "default": true,
+          "description": "Show text label for trend line"
+        },
+        {
+          "param": "fontBold",
+          "name": "fontBold",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text bold"
+        },
+        {
+          "param": "fontItalic",
+          "name": "fontItalic",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text italic"
+        },
+        {
+          "param": "extendLeft",
+          "name": "extendLeft",
+          "type": "boolean",
+          "default": false,
+          "description": "Extend line to the left"
+        },
+        {
+          "param": "extendRight",
+          "name": "extendRight",
+          "type": "boolean",
+          "default": false,
+          "description": "Extend line to the right"
+        }
+      ],
+      "keywords": ["trend", "line", "diagonal", "slope", "support", "resistance", "trendline"],
+      "tested": true,
+      "notes": "Requires two price points with corresponding ISO8601 datetimes. Useful for identifying trend direction and momentum. IMPORTANT: Must use actual price levels and dates from the chart for drawing to render correctly.",
+      "example": {
+        "name": "Trend Line",
+        "input": {
+          "startDatetime": "2025-01-13T00:00:00.000Z",
+          "startPrice": 91000,
+          "endDatetime": "2025-01-25T00:00:00.000Z",
+          "endPrice": 102680,
+          "text": "TREND LINE"
+        },
+        "override": {
+          "lineWidth": 2,
+          "lineColor": "rgb(41,98,255)",
+          "lineStyle": 0
+        }
+      }
+    },
+    {
+      "id": "vertical-line",
+      "name": "Vertical Line",
+      "type": "Vertical Line",
+      "category": "Lines",
+      "description": "A vertical line at a specific time point on the chart, useful for marking events or important time periods",
+      "inputs": [
+        {
+          "param": "datetime",
+          "name": "datetime",
+          "type": "string",
+          "required": true,
+          "description": "Datetime for the vertical line in ISO8601 format (YYYY-MM-DDTHH:MM:SS.sssZ)",
+          "unit": "time"
+        },
+        {
+          "param": "text",
+          "name": "text",
+          "type": "string",
+          "required": false,
+          "description": "Optional label text for the vertical line"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 12,
+          "min": 10,
+          "max": 250,
+          "description": "Font size for label text"
+        },
+        {
+          "param": "lineStyle",
+          "name": "lineStyle",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 5,
+          "description": "Line dash pattern (0=solid, 1=dotted, 2=dashed, 3=dash-dot)"
+        },
+        {
+          "param": "lineWidth",
+          "name": "lineWidth",
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 100,
+          "description": "Line thickness in pixels"
+        },
+        {
+          "param": "lineColor",
+          "name": "lineColor",
+          "type": "string",
+          "default": "rgb(41,98,255)",
+          "description": "Line color in RGB or RGBA format"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(41,98,255)",
+          "description": "Text color in RGB or RGBA format"
+        },
+        {
+          "param": "vertLabelAlign",
+          "name": "vertLabelAlign",
+          "type": "string",
+          "default": "top",
+          "description": "Vertical label alignment (top, middle, bottom)"
+        },
+        {
+          "param": "horzLabelAlign",
+          "name": "horzLabelAlign",
+          "type": "string",
+          "default": "right",
+          "description": "Horizontal label alignment (center, left, right)"
+        },
+        {
+          "param": "showTime",
+          "name": "showTime",
+          "type": "boolean",
+          "default": true,
+          "description": "Show datetime for vertical line"
+        },
+        {
+          "param": "fontBold",
+          "name": "fontBold",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text bold"
+        },
+        {
+          "param": "fontItalic",
+          "name": "fontItalic",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text italic"
+        }
+      ],
+      "keywords": ["vertical", "line", "time", "event", "marker", "event marker"],
+      "tested": true,
+      "notes": "Marks a specific point in time on the chart. Useful for highlighting important events or analysis points. IMPORTANT: Must use actual dates visible on the chart for drawing to render correctly.",
+      "example": {
+        "name": "Vertical Line",
+        "input": {
+          "datetime": "2023-01-01T17:00:00.000Z",
+          "text": "Line Example"
+        },
+        "override": {
+          "fontSize": 25,
+          "vertLabelAlign": "middle"
+        }
+      }
+    },
+    {
+      "id": "order-line",
+      "name": "Order Line",
+      "type": "Order Line",
+      "category": "Orders",
+      "description": "Marks specific price levels for trade entry/exit points, commonly used to display pending or executed orders",
+      "inputs": [
+        {
+          "param": "text",
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "Order line label text (e.g., 'BUY ORDER #1')"
+        },
+        {
+          "param": "quantity",
+          "name": "quantity",
+          "type": "string",
+          "required": true,
+          "description": "Order quantity (e.g., '0.25 BTC')"
+        },
+        {
+          "param": "price",
+          "name": "price",
+          "type": "number",
+          "required": false,
+          "description": "Order price level (optional, uses {LAST_PRICE} as default)"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 9,
+          "min": 1,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "lineStyle",
+          "name": "lineStyle",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 5,
+          "description": "Line dash pattern (0=solid, 1=dotted, 2=dashed, 3=dash-dot)"
+        },
+        {
+          "param": "lineWidth",
+          "name": "lineWidth",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "description": "Line thickness in pixels"
+        },
+        {
+          "param": "lineSpace",
+          "name": "lineSpace",
+          "type": "number",
+          "default": 5,
+          "min": 0,
+          "max": 100,
+          "description": "Extend line space length"
+        },
+        {
+          "param": "extendLeft",
+          "name": "extendLeft",
+          "type": "boolean",
+          "default": true,
+          "description": "Extend line area to left"
+        },
+        {
+          "param": "lineColor",
+          "name": "lineColor",
+          "type": "string",
+          "default": "rgb(0,113,224)",
+          "description": "Line color in RGB or RGBA format"
+        },
+        {
+          "param": "bodyBackgroundColor",
+          "name": "bodyBackgroundColor",
+          "type": "string",
+          "default": "rgba(255,255,255,0.8)",
+          "description": "Background color for order body"
+        },
+        {
+          "param": "bodyBorderColor",
+          "name": "bodyBorderColor",
+          "type": "string",
+          "default": "rgb(0,113,224)",
+          "description": "Border color for order body"
+        },
+        {
+          "param": "bodyTextColor",
+          "name": "bodyTextColor",
+          "type": "string",
+          "default": "rgb(0,113,224)",
+          "description": "Text color for order body"
+        },
+        {
+          "param": "quantityBackgroundColor",
+          "name": "quantityBackgroundColor",
+          "type": "string",
+          "default": "rgba(0,113,224,0.8)",
+          "description": "Background color for quantity display"
+        },
+        {
+          "param": "quantityBorderColor",
+          "name": "quantityBorderColor",
+          "type": "string",
+          "default": "rgb(0,113,224)",
+          "description": "Border color for quantity display"
+        },
+        {
+          "param": "quantityTextColor",
+          "name": "quantityTextColor",
+          "type": "string",
+          "default": "rgb(255,255,255)",
+          "description": "Text color for quantity display"
+        }
+      ],
+      "keywords": ["order", "entry", "exit", "trade", "pending", "execution", "buy", "sell"],
+      "tested": true,
+      "notes": "Specifically designed for marking trade orders with quantity and price. Shows detailed order information with customizable colors.",
+      "example": {
+        "name": "Order Line",
+        "input": {
+          "text": "BUY ORDER #1",
+          "quantity": "0.25 BTC",
+          "price": 22680
+        },
+        "override": {
+          "bodyBackgroundColor": "rgba(255,255,255,1)",
+          "quantityBackgroundColor": "rgba(0,113,224,1)"
+        }
+      }
+    },
+    {
+      "id": "long-position",
+      "name": "Long Position",
+      "type": "Long Position",
+      "category": "Positions",
+      "description": "Visualizes a complete long trading position with entry, target, and stop-loss levels, including profit/loss areas",
+      "inputs": [
+        {
+          "param": "startDatetime",
+          "name": "startDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Position area start datetime in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "entryPrice",
+          "name": "entryPrice",
+          "type": "number",
+          "required": true,
+          "description": "Long entry price",
+          "unit": "price"
+        },
+        {
+          "param": "targetPrice",
+          "name": "targetPrice",
+          "type": "number",
+          "required": true,
+          "description": "Long take-profit target price",
+          "unit": "price"
+        },
+        {
+          "param": "stopPrice",
+          "name": "stopPrice",
+          "type": "number",
+          "required": true,
+          "description": "Long stop-loss price",
+          "unit": "price"
+        },
+        {
+          "param": "endDatetime",
+          "name": "endDatetime",
+          "type": "string",
+          "required": false,
+          "description": "Position area end datetime in ISO8601 format (optional)",
+          "unit": "time"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 12,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "lineWidth",
+          "name": "lineWidth",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "description": "Line thickness in pixels"
+        },
+        {
+          "param": "accountSize",
+          "name": "accountSize",
+          "type": "number",
+          "default": 1000,
+          "description": "Account size for risk calculations"
+        },
+        {
+          "param": "lotSize",
+          "name": "lotSize",
+          "type": "number",
+          "default": 1,
+          "description": "Position lot size"
+        },
+        {
+          "param": "risk",
+          "name": "risk",
+          "type": "number",
+          "default": 25,
+          "description": "Risk value"
+        },
+        {
+          "param": "riskDisplayMode",
+          "name": "riskDisplayMode",
+          "type": "string",
+          "default": "percents",
+          "description": "Risk display mode (percents or money)"
+        },
+        {
+          "param": "fillBackground",
+          "name": "fillBackground",
+          "type": "boolean",
+          "default": true,
+          "description": "Fill position area background color"
+        },
+        {
+          "param": "showPrice",
+          "name": "showPrice",
+          "type": "boolean",
+          "default": true,
+          "description": "Show price labels"
+        },
+        {
+          "param": "showStats",
+          "name": "showStats",
+          "type": "boolean",
+          "default": false,
+          "description": "Show statistics (RR ratio, P&L)"
+        },
+        {
+          "param": "showCompact",
+          "name": "showCompact",
+          "type": "boolean",
+          "default": false,
+          "description": "Show compact stats mode"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(255,255,255)",
+          "description": "Text color in RGB format"
+        },
+        {
+          "param": "lineColor",
+          "name": "lineColor",
+          "type": "string",
+          "default": "rgb(120,123,134)",
+          "description": "Line color in RGB format"
+        },
+        {
+          "param": "borderColor",
+          "name": "borderColor",
+          "type": "string",
+          "default": "rgb(102,123,139)",
+          "description": "Border color in RGB format"
+        },
+        {
+          "param": "profitBackground",
+          "name": "profitBackground",
+          "type": "string",
+          "default": "rgba(8,153,129,0.2)",
+          "description": "Profit area background color (green for long)"
+        },
+        {
+          "param": "stopBackground",
+          "name": "stopBackground",
+          "type": "string",
+          "default": "rgba(242,54,69,0.2)",
+          "description": "Stop-loss area background color (red)"
+        }
+      ],
+      "keywords": ["long", "position", "buy", "trade", "entry", "target", "stop loss", "take profit", "risk management"],
+      "tested": true,
+      "notes": "Creates colored areas between price levels. Green area shows potential profit (entry to target), red area shows potential loss (entry to stop).",
+      "example": {
+        "name": "Long Position",
+        "input": {
+          "startDatetime": "2023-01-20T00:00:00.000Z",
+          "entryPrice": 22000,
+          "targetPrice": 25000,
+          "stopPrice": 21000,
+          "endDatetime": "2023-02-12T00:00:00.000Z"
+        },
+        "override": {
+          "accountSize": 1000,
+          "risk": 2,
+          "showStats": true,
+          "fontSize": 14
+        }
+      }
+    },
+    {
+      "id": "short-position",
+      "name": "Short Position",
+      "type": "Short Position",
+      "category": "Positions",
+      "description": "Visualizes a complete short trading position with entry, target, and stop-loss levels, including profit/loss areas",
+      "inputs": [
+        {
+          "param": "startDatetime",
+          "name": "startDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Position area start datetime in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "entryPrice",
+          "name": "entryPrice",
+          "type": "number",
+          "required": true,
+          "description": "Short entry price",
+          "unit": "price"
+        },
+        {
+          "param": "targetPrice",
+          "name": "targetPrice",
+          "type": "number",
+          "required": true,
+          "description": "Short take-profit target price",
+          "unit": "price"
+        },
+        {
+          "param": "stopPrice",
+          "name": "stopPrice",
+          "type": "number",
+          "required": true,
+          "description": "Short stop-loss price",
+          "unit": "price"
+        },
+        {
+          "param": "endDatetime",
+          "name": "endDatetime",
+          "type": "string",
+          "required": false,
+          "description": "Position area end datetime in ISO8601 format (optional)",
+          "unit": "time"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 12,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "lineWidth",
+          "name": "lineWidth",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "description": "Line thickness in pixels"
+        },
+        {
+          "param": "accountSize",
+          "name": "accountSize",
+          "type": "number",
+          "default": 1000,
+          "description": "Account size for risk calculations"
+        },
+        {
+          "param": "lotSize",
+          "name": "lotSize",
+          "type": "number",
+          "default": 1,
+          "description": "Position lot size"
+        },
+        {
+          "param": "risk",
+          "name": "risk",
+          "type": "number",
+          "default": 25,
+          "description": "Risk value"
+        },
+        {
+          "param": "riskDisplayMode",
+          "name": "riskDisplayMode",
+          "type": "string",
+          "default": "percents",
+          "description": "Risk display mode (percents or money)"
+        },
+        {
+          "param": "fillBackground",
+          "name": "fillBackground",
+          "type": "boolean",
+          "default": true,
+          "description": "Fill position area background color"
+        },
+        {
+          "param": "showPrice",
+          "name": "showPrice",
+          "type": "boolean",
+          "default": true,
+          "description": "Show price labels"
+        },
+        {
+          "param": "showStats",
+          "name": "showStats",
+          "type": "boolean",
+          "default": false,
+          "description": "Show statistics (RR ratio, P&L)"
+        },
+        {
+          "param": "showCompact",
+          "name": "showCompact",
+          "type": "boolean",
+          "default": false,
+          "description": "Show compact stats mode"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(255,255,255)",
+          "description": "Text color in RGB format"
+        },
+        {
+          "param": "lineColor",
+          "name": "lineColor",
+          "type": "string",
+          "default": "rgb(120,123,134)",
+          "description": "Line color in RGB format"
+        },
+        {
+          "param": "borderColor",
+          "name": "borderColor",
+          "type": "string",
+          "default": "rgb(102,123,139)",
+          "description": "Border color in RGB format"
+        },
+        {
+          "param": "profitBackground",
+          "name": "profitBackground",
+          "type": "string",
+          "default": "rgba(8,153,129,0.2)",
+          "description": "Profit area background color (teal for short)"
+        },
+        {
+          "param": "stopBackground",
+          "name": "stopBackground",
+          "type": "string",
+          "default": "rgba(242,54,69,0.2)",
+          "description": "Stop-loss area background color (red)"
+        }
+      ],
+      "keywords": ["short", "position", "sell", "trade", "entry", "target", "stop loss", "take profit", "risk management"],
+      "tested": true,
+      "notes": "Creates colored areas between price levels. Teal area shows potential profit (entry to target), red area shows potential loss (entry to stop).",
+      "example": {
+        "name": "Short Position",
+        "input": {
+          "startDatetime": "2023-02-08T00:00:00.000Z",
+          "entryPrice": 24000,
+          "targetPrice": 21000,
+          "stopPrice": 25000,
+          "endDatetime": "2023-02-12T00:00:00.000Z"
+        },
+        "override": {
+          "accountSize": 1000,
+          "risk": 2,
+          "showStats": false,
+          "fontSize": 14
+        }
+      }
+    },
+    {
+      "id": "fib-retracement",
+      "name": "Fib Retracement",
+      "type": "Fib Retracement",
+      "category": "Advanced",
+      "description": "Fibonacci Retracement tool for identifying potential support and resistance levels based on Fibonacci ratios",
+      "inputs": [
+        {
+          "param": "startDatetime",
+          "name": "startDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Start position x-axis in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "startPrice",
+          "name": "startPrice",
+          "type": "number",
+          "required": true,
+          "description": "Start position y-axis (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "endDatetime",
+          "name": "endDatetime",
+          "type": "string",
+          "required": true,
+          "description": "End position x-axis in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "endPrice",
+          "name": "endPrice",
+          "type": "number",
+          "required": true,
+          "description": "End position y-axis (price level)",
+          "unit": "price"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 12,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "transparency",
+          "name": "transparency",
+          "type": "number",
+          "default": 80,
+          "min": 0,
+          "max": 100,
+          "description": "Fill background transparency"
+        },
+        {
+          "param": "horzLabelAlign",
+          "name": "horzLabelAlign",
+          "type": "string",
+          "default": "left",
+          "description": "Label horizontal align (center, left, right)"
+        },
+        {
+          "param": "vertLabelAlign",
+          "name": "vertLabelAlign",
+          "type": "string",
+          "default": "bottom",
+          "description": "Label vertical align (top, middle, bottom)"
+        },
+        {
+          "param": "showCoeff",
+          "name": "showCoeff",
+          "type": "boolean",
+          "default": true,
+          "description": "Show coefficient values in the label"
+        },
+        {
+          "param": "showPrice",
+          "name": "showPrice",
+          "type": "boolean",
+          "default": true,
+          "description": "Show prices in the label"
+        },
+        {
+          "param": "fillBackground",
+          "name": "fillBackground",
+          "type": "boolean",
+          "default": true,
+          "description": "Fill background in each level"
+        },
+        {
+          "param": "extendLine",
+          "name": "extendLine",
+          "type": "boolean",
+          "default": false,
+          "description": "Extend the level lines"
+        },
+        {
+          "param": "extendLeft",
+          "name": "extendLeft",
+          "type": "boolean",
+          "default": false,
+          "description": "Extend the left level lines"
+        },
+        {
+          "param": "reverseLevel",
+          "name": "reverseLevel",
+          "type": "boolean",
+          "default": false,
+          "description": "Show the levels in reverse"
+        },
+        {
+          "param": "coeffAsPercent",
+          "name": "coeffAsPercent",
+          "type": "boolean",
+          "default": false,
+          "description": "Show coefficient values as percentage"
+        },
+        {
+          "param": "fibLevelBasedOnLogScale",
+          "name": "fibLevelBasedOnLogScale",
+          "type": "boolean",
+          "default": false,
+          "description": "Override showInvertScale must be set to true"
+        },
+        {
+          "param": "level1",
+          "name": "level1",
+          "type": "object",
+          "default": {"visible": true, "coeff": 0, "color": "rgb(120,123,134)"},
+          "description": "Fibonacci level 1 (0%)"
+        },
+        {
+          "param": "level2",
+          "name": "level2",
+          "type": "object",
+          "default": {"visible": true, "coeff": 0.236, "color": "rgb(242,54,69)"},
+          "description": "Fibonacci level 2 (23.6%)"
+        },
+        {
+          "param": "level3",
+          "name": "level3",
+          "type": "object",
+          "default": {"visible": true, "coeff": 0.382, "color": "rgb(129,199,132)"},
+          "description": "Fibonacci level 3 (38.2%)"
+        },
+        {
+          "param": "level4",
+          "name": "level4",
+          "type": "object",
+          "default": {"visible": true, "coeff": 0.5, "color": "rgb(76,175,80)"},
+          "description": "Fibonacci level 4 (50%)"
+        },
+        {
+          "param": "level5",
+          "name": "level5",
+          "type": "object",
+          "default": {"visible": true, "coeff": 0.618, "color": "rgb(8,153,129)"},
+          "description": "Fibonacci level 5 (61.8% - Golden Ratio)"
+        },
+        {
+          "param": "level6",
+          "name": "level6",
+          "type": "object",
+          "default": {"visible": true, "coeff": 0.786, "color": "rgb(100,181,246)"},
+          "description": "Fibonacci level 6 (78.6%)"
+        },
+        {
+          "param": "level7",
+          "name": "level7",
+          "type": "object",
+          "default": {"visible": true, "coeff": 1, "color": "rgb(120,123,134)"},
+          "description": "Fibonacci level 7 (100%)"
+        },
+        {
+          "param": "level8",
+          "name": "level8",
+          "type": "object",
+          "default": {"visible": true, "coeff": 1.618, "color": "rgb(41,98,255)"},
+          "description": "Fibonacci level 8 (161.8% extension)"
+        },
+        {
+          "param": "level9",
+          "name": "level9",
+          "type": "object",
+          "default": {"visible": true, "coeff": 2.618, "color": "rgb(242,54,69)"},
+          "description": "Fibonacci level 9 (261.8% extension)"
+        },
+        {
+          "param": "level10",
+          "name": "level10",
+          "type": "object",
+          "default": {"visible": true, "coeff": 3.618, "color": "rgb(156,39,176)"},
+          "description": "Fibonacci level 10 (361.8% extension)"
+        },
+        {
+          "param": "level11",
+          "name": "level11",
+          "type": "object",
+          "default": {"visible": true, "coeff": 4.236, "color": "rgb(233,30,99)"},
+          "description": "Fibonacci level 11 (423.6% extension)"
+        }
+      ],
+      "keywords": ["fibonacci", "fib", "retracement", "support", "resistance", "golden ratio", "technical analysis"],
+      "tested": true,
+      "notes": "Fibonacci Retracement draws horizontal lines at key Fibonacci levels between two price points. Traders use these levels to identify potential support and resistance areas.",
+      "example": {
+        "name": "Fib Retracement",
+        "input": {
+          "startDatetime": "2022-12-30T05:00:00.000Z",
+          "startPrice": 16333,
+          "endDatetime": "2023-02-02T05:00:00.000Z",
+          "endPrice": 24255
+        },
+        "override": {
+          "extendLine": true,
+          "level7": {
+            "color": "rgb(255,255,255)"
+          }
+        }
+      }
+    },
+    {
+      "id": "date-range",
+      "name": "Date Range",
+      "type": "Date Range",
+      "category": "Shapes",
+      "description": "Highlights a specific time and price range on the chart with a rectangular area",
+      "inputs": [
+        {
+          "param": "startDatetime",
+          "name": "startDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Range start position x-axis in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "startPrice",
+          "name": "startPrice",
+          "type": "number",
+          "required": true,
+          "description": "Range start position y-axis (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "endDatetime",
+          "name": "endDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Range end position x-axis in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "endPrice",
+          "name": "endPrice",
+          "type": "number",
+          "required": true,
+          "description": "Range end position y-axis (price level)",
+          "unit": "price"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 12,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "lineWidth",
+          "name": "lineWidth",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "description": "Line thickness in pixels"
+        },
+        {
+          "param": "transparency",
+          "name": "transparency",
+          "type": "number",
+          "default": 60,
+          "min": 0,
+          "max": 100,
+          "description": "Background transparency (0-100)"
+        },
+        {
+          "param": "fillBackground",
+          "name": "fillBackground",
+          "type": "boolean",
+          "default": true,
+          "description": "Fill the range area with background color"
+        },
+        {
+          "param": "fillLabelBackground",
+          "name": "fillLabelBackground",
+          "type": "boolean",
+          "default": true,
+          "description": "Fill label background"
+        },
+        {
+          "param": "extendTop",
+          "name": "extendTop",
+          "type": "boolean",
+          "default": false,
+          "description": "Extend the range to the top of the chart"
+        },
+        {
+          "param": "extendBottom",
+          "name": "extendBottom",
+          "type": "boolean",
+          "default": false,
+          "description": "Extend the range to the bottom of the chart"
+        }
+      ],
+      "keywords": ["date", "range", "rectangle", "area", "highlight", "period", "timeframe"],
+      "tested": true,
+      "notes": "Creates a rectangular highlight area between two datetime/price points. Useful for marking important time periods or price zones.",
+      "example": {
+        "name": "Date Range",
+        "input": {
+          "startDatetime": "2023-01-01T00:00:00.000Z",
+          "startPrice": 16333,
+          "endDatetime": "2023-02-09T00:00:00.000Z",
+          "endPrice": 18000
+        },
+        "override": {
+          "fontSize": 16,
+          "extendTop": true,
+          "extendBottom": true
+        }
+      }
+    },
+    {
+      "id": "date-price-range",
+      "name": "Date Price Range",
+      "type": "Date Price Range",
+      "category": "Shapes",
+      "description": "Highlights a specific time and price range on the chart with percentage and price change information",
+      "inputs": [
+        {
+          "param": "startDatetime",
+          "name": "startDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Range start position x-axis in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "startPrice",
+          "name": "startPrice",
+          "type": "number",
+          "required": true,
+          "description": "Range start position y-axis (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "endDatetime",
+          "name": "endDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Range end position x-axis in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "endPrice",
+          "name": "endPrice",
+          "type": "number",
+          "required": true,
+          "description": "Range end position y-axis (price level)",
+          "unit": "price"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 12,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "lineWidth",
+          "name": "lineWidth",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "description": "Line thickness in pixels"
+        },
+        {
+          "param": "transparency",
+          "name": "transparency",
+          "type": "number",
+          "default": 60,
+          "min": 0,
+          "max": 100,
+          "description": "Background transparency (0-100)"
+        },
+        {
+          "param": "fillBackground",
+          "name": "fillBackground",
+          "type": "boolean",
+          "default": true,
+          "description": "Fill the range area with background color"
+        },
+        {
+          "param": "fillLabelBackground",
+          "name": "fillLabelBackground",
+          "type": "boolean",
+          "default": true,
+          "description": "Fill label background"
+        }
+      ],
+      "keywords": ["date", "price", "range", "rectangle", "area", "highlight", "percentage", "change"],
+      "tested": true,
+      "notes": "Creates a rectangular highlight area showing price and percentage change between two datetime/price points. Similar to Date Range but focuses on price movement statistics.",
+      "example": {
+        "name": "Date Price Range",
+        "input": {
+          "startDatetime": "2023-01-01T00:00:00.000Z",
+          "startPrice": 16499,
+          "endDatetime": "2023-01-18T00:00:00.000Z",
+          "endPrice": 21650
+        },
+        "override": {
+          "fontSize": 16
+        }
+      }
+    },
+    {
+      "id": "rectangle",
+      "name": "Rectangle",
+      "type": "Rectangle",
+      "category": "Shapes",
+      "description": "Draws a customizable rectangle with optional text label to highlight specific chart areas",
+      "inputs": [
+        {
+          "param": "startDatetime",
+          "name": "startDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Left x-axis start position in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "startPrice",
+          "name": "startPrice",
+          "type": "number",
+          "required": true,
+          "description": "Left y-axis start position (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "endDatetime",
+          "name": "endDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Right x-axis end position in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "endPrice",
+          "name": "endPrice",
+          "type": "number",
+          "required": true,
+          "description": "Right y-axis end position (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "text",
+          "name": "text",
+          "type": "string",
+          "required": false,
+          "description": "Label text (optional)"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 14,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "lineWidth",
+          "name": "lineWidth",
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 100,
+          "description": "Line thickness in pixels"
+        },
+        {
+          "param": "horzLabelAlign",
+          "name": "horzLabelAlign",
+          "type": "string",
+          "default": "left",
+          "description": "Text label horizontal align (center, left, right)"
+        },
+        {
+          "param": "vertLabelAlign",
+          "name": "vertLabelAlign",
+          "type": "string",
+          "default": "bottom",
+          "description": "Text label vertical align (top, middle, bottom)"
+        },
+        {
+          "param": "showLabel",
+          "name": "showLabel",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text label"
+        },
+        {
+          "param": "fontBold",
+          "name": "fontBold",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text bold"
+        },
+        {
+          "param": "fontItalic",
+          "name": "fontItalic",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text italic"
+        },
+        {
+          "param": "extendLeft",
+          "name": "extendLeft",
+          "type": "boolean",
+          "default": false,
+          "description": "Extend line area to left"
+        },
+        {
+          "param": "extendRight",
+          "name": "extendRight",
+          "type": "boolean",
+          "default": false,
+          "description": "Extend line area to right"
+        },
+        {
+          "param": "fillBackground",
+          "name": "fillBackground",
+          "type": "boolean",
+          "default": true,
+          "description": "Fill line area background color"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(156,39,176)",
+          "description": "Text color in RGB format"
+        },
+        {
+          "param": "lineColor",
+          "name": "lineColor",
+          "type": "string",
+          "default": "rgb(156,39,176)",
+          "description": "Line color in RGB format"
+        },
+        {
+          "param": "backgroundColor",
+          "name": "backgroundColor",
+          "type": "string",
+          "default": "rgba(156,39,176,0.2)",
+          "description": "Background fill color in RGBA format"
+        }
+      ],
+      "keywords": ["rectangle", "box", "area", "zone", "highlight", "label", "shape"],
+      "tested": true,
+      "notes": "Creates a rectangular shape with customizable borders, fill, and optional text label. Useful for marking important zones or areas on the chart.",
+      "example": {
+        "name": "Rectangle",
+        "input": {
+          "startDatetime": "2024-03-01T00:00:00.000Z",
+          "startPrice": 52000,
+          "endDatetime": "2024-05-10T00:00:00.000Z",
+          "endPrice": 60000,
+          "text": "RECTANGLE ZONE"
+        },
+        "override": {
+          "fontBold": true,
+          "showLabel": true,
+          "lineColor": "rgb(0,113,224)",
+          "horzLabelAlign": "center",
+          "vertLabelAlign": "middle"
+        }
+      }
+    },
+    {
+      "id": "arrow-marker",
+      "name": "Arrow Marker",
+      "type": "Arrow Marker",
+      "category": "Shapes",
+      "description": "Draws an arrow from one point to another with optional text label to indicate direction or important movements",
+      "inputs": [
+        {
+          "param": "startDatetime",
+          "name": "startDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Tail of the arrow x-axis in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "startPrice",
+          "name": "startPrice",
+          "type": "number",
+          "required": true,
+          "description": "Tail of the arrow y-axis (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "endDatetime",
+          "name": "endDatetime",
+          "type": "string",
+          "required": true,
+          "description": "Head of the arrow x-axis in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "endPrice",
+          "name": "endPrice",
+          "type": "number",
+          "required": true,
+          "description": "Head of the arrow y-axis (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "text",
+          "name": "text",
+          "type": "string",
+          "required": false,
+          "description": "Label text (optional)"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 16,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "fontBold",
+          "name": "fontBold",
+          "type": "boolean",
+          "default": true,
+          "description": "Show text bold"
+        },
+        {
+          "param": "fontItalic",
+          "name": "fontItalic",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text italic"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(30,83,229)",
+          "description": "Text color in RGB format"
+        },
+        {
+          "param": "arrowColor",
+          "name": "arrowColor",
+          "type": "string",
+          "default": "rgb(30,83,229)",
+          "description": "Arrow color in RGB format"
+        }
+      ],
+      "keywords": ["arrow", "marker", "pointer", "direction", "annotation", "movement"],
+      "tested": true,
+      "notes": "Creates an arrow pointing from start to end position with optional text label. Useful for annotating important price movements or trends.",
+      "example": {
+        "name": "Arrow Marker",
+        "input": {
+          "startDatetime": "2022-12-05T00:00:00.000Z",
+          "startPrice": 20600,
+          "endDatetime": "2023-01-08T00:00:00.000Z",
+          "endPrice": 17600,
+          "text": "Big Arrow!"
+        },
+        "override": {
+          "fontSize": 18
+        }
+      }
+    },
+    {
+      "id": "arrow-mark-up",
+      "name": "Arrow Mark Up",
+      "type": "Arrow Mark Up",
+      "category": "Shapes",
+      "description": "Draws an upward-pointing arrow at a specific price and time with optional text label",
+      "inputs": [
+        {
+          "param": "datetime",
+          "name": "datetime",
+          "type": "string",
+          "required": true,
+          "description": "Arrow head x-axis position in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "price",
+          "name": "price",
+          "type": "number",
+          "required": true,
+          "description": "Arrow head y-axis position (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "text",
+          "name": "text",
+          "type": "string",
+          "required": false,
+          "description": "Label text (optional)"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 14,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "fontBold",
+          "name": "fontBold",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text bold"
+        },
+        {
+          "param": "fontItalic",
+          "name": "fontItalic",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text italic"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(8,153,129)",
+          "description": "Text color in RGB format"
+        },
+        {
+          "param": "arrowColor",
+          "name": "arrowColor",
+          "type": "string",
+          "default": "rgb(8,153,129)",
+          "description": "Arrow color in RGB format"
+        }
+      ],
+      "keywords": ["arrow", "mark", "up", "bullish", "buy", "signal", "annotation"],
+      "tested": true,
+      "notes": "Creates an upward-pointing arrow at a specific location with optional text. Commonly used to mark buy signals or bullish points.",
+      "example": {
+        "name": "Arrow Mark Up",
+        "input": {
+          "datetime": "2022-12-30T00:00:00.000Z",
+          "price": 16000,
+          "text": "EXAMPLE"
+        },
+        "override": {
+          "fontBold": true
+        }
+      }
+    },
+    {
+      "id": "arrow-mark-down",
+      "name": "Arrow Mark Down",
+      "type": "Arrow Mark Down",
+      "category": "Shapes",
+      "description": "Draws a downward-pointing arrow at a specific price and time with optional text label",
+      "inputs": [
+        {
+          "param": "datetime",
+          "name": "datetime",
+          "type": "string",
+          "required": true,
+          "description": "Arrow head x-axis position in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "price",
+          "name": "price",
+          "type": "number",
+          "required": true,
+          "description": "Arrow head y-axis position (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "text",
+          "name": "text",
+          "type": "string",
+          "required": false,
+          "description": "Label text (optional)"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 14,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "fontBold",
+          "name": "fontBold",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text bold"
+        },
+        {
+          "param": "fontItalic",
+          "name": "fontItalic",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text italic"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(204,47,60)",
+          "description": "Text color in RGB format"
+        },
+        {
+          "param": "arrowColor",
+          "name": "arrowColor",
+          "type": "string",
+          "default": "rgb(204,47,60)",
+          "description": "Arrow color in RGB format"
+        }
+      ],
+      "keywords": ["arrow", "mark", "down", "bearish", "sell", "signal", "annotation"],
+      "tested": true,
+      "notes": "Creates a downward-pointing arrow at a specific location with optional text. Commonly used to mark sell signals or bearish points.",
+      "example": {
+        "name": "Arrow Mark Down",
+        "input": {
+          "datetime": "2022-12-14T00:00:00.000Z",
+          "price": 18700,
+          "text": "EXAMPLE"
+        },
+        "override": {
+          "fontSize": 16,
+          "fontBold": true
+        }
+      }
+    },
+    {
+      "id": "text",
+      "name": "Text",
+      "type": "Text",
+      "category": "Shapes",
+      "description": "Adds customizable text annotation at a specific price and time location on the chart",
+      "inputs": [
+        {
+          "param": "datetime",
+          "name": "datetime",
+          "type": "string",
+          "required": true,
+          "description": "Text x-axis start position in ISO8601 format",
+          "unit": "time"
+        },
+        {
+          "param": "price",
+          "name": "price",
+          "type": "number",
+          "required": true,
+          "description": "Text y-axis start position (price level)",
+          "unit": "price"
+        },
+        {
+          "param": "text",
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "Text content to display"
+        }
+      ],
+      "overrides": [
+        {
+          "param": "fontSize",
+          "name": "fontSize",
+          "type": "number",
+          "default": 14,
+          "min": 10,
+          "max": 250,
+          "description": "Font size in pixels"
+        },
+        {
+          "param": "fontBold",
+          "name": "fontBold",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text bold"
+        },
+        {
+          "param": "fontItalic",
+          "name": "fontItalic",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text italic"
+        },
+        {
+          "param": "showBorder",
+          "name": "showBorder",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text with border"
+        },
+        {
+          "param": "fillBackground",
+          "name": "fillBackground",
+          "type": "boolean",
+          "default": false,
+          "description": "Show text with filled background color"
+        },
+        {
+          "param": "textColor",
+          "name": "textColor",
+          "type": "string",
+          "default": "rgb(41,98,255)",
+          "description": "Text color in RGB format"
+        },
+        {
+          "param": "borderColor",
+          "name": "borderColor",
+          "type": "string",
+          "default": "rgb(102,123,139)",
+          "description": "Border color in RGB format"
+        },
+        {
+          "param": "backgroundColor",
+          "name": "backgroundColor",
+          "type": "string",
+          "default": "rgba(91,133,191,0.3)",
+          "description": "Background fill color in RGBA format"
+        }
+      ],
+      "keywords": ["text", "label", "annotation", "note", "comment", "description"],
+      "tested": true,
+      "notes": "Adds free-form text at any location on the chart. Can be styled with bold, italic, borders, and background fills.",
+      "example": {
+        "name": "Text",
+        "input": {
+          "datetime": "2022-12-01T00:00:00.000Z",
+          "price": 20000,
+          "text": "This is example"
+        },
+        "override": {
+          "fontSize": 20,
+          "fontBold": true
+        }
+      }
+    }
+  ],
+  "progress": {
+    "total": 14,
+    "added": 14,
+    "remaining": 0,
+    "batches": [
+      {
+        "batchNumber": 1,
+        "count": 2,
+        "range": "Horizontal Line, Order Line (FULLY WORKING)",
+        "completed": true,
+        "dateAdded": "2025-11-07"
+      },
+      {
+        "batchNumber": 2,
+        "count": 2,
+        "range": "Trend Line, Vertical Line (FULLY WORKING - tested on Gold chart)",
+        "completed": true,
+        "dateAdded": "2025-11-07"
+      },
+      {
+        "batchNumber": 3,
+        "count": 2,
+        "range": "Long Position, Short Position (Trading position visualization)",
+        "completed": true,
+        "dateAdded": "2025-11-07"
+      },
+      {
+        "batchNumber": 4,
+        "count": 1,
+        "range": "Fib Retracement (Technical analysis tool)",
+        "completed": true,
+        "dateAdded": "2025-11-10"
+      },
+      {
+        "batchNumber": 5,
+        "count": 1,
+        "range": "Date Range (Area highlighting)",
+        "completed": true,
+        "dateAdded": "2025-11-10"
+      },
+      {
+        "batchNumber": 6,
+        "count": 1,
+        "range": "Date Price Range (Price movement statistics)",
+        "completed": true,
+        "dateAdded": "2025-11-10"
+      },
+      {
+        "batchNumber": 7,
+        "count": 1,
+        "range": "Rectangle (Custom zone marking)",
+        "completed": true,
+        "dateAdded": "2025-11-10"
+      },
+      {
+        "batchNumber": 8,
+        "count": 1,
+        "range": "Arrow Marker (Directional annotation)",
+        "completed": true,
+        "dateAdded": "2025-11-10"
+      },
+      {
+        "batchNumber": 9,
+        "count": 1,
+        "range": "Arrow Mark Up (Bullish signal marker)",
+        "completed": true,
+        "dateAdded": "2025-11-10"
+      },
+      {
+        "batchNumber": 10,
+        "count": 1,
+        "range": "Arrow Mark Down (Bearish signal marker)",
+        "completed": true,
+        "dateAdded": "2025-11-10"
+      },
+      {
+        "batchNumber": 11,
+        "count": 1,
+        "range": "Text (Free-form annotation)",
+        "completed": true,
+        "dateAdded": "2025-11-10"
+      }
+    ]
+  }
+}

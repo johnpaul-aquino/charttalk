@@ -6,6 +6,8 @@
 
 import { z } from 'zod';
 import { createChartImgClient, type ChartConfig, type ChartResponse } from '../utils/chart-img-client.js';
+import path from 'path';
+import os from 'os';
 
 // Input schema
 export const GenerateChartInputSchema = z.object({
@@ -20,6 +22,15 @@ export const GenerateChartInputSchema = z.object({
     .optional()
     .default('png')
     .describe('Image format'),
+  saveToFile: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe('When storage=false, automatically save image to /tmp for AI analysis'),
+  filename: z
+    .string()
+    .optional()
+    .describe('Custom filename when saveToFile=true (default: chart-{timestamp}.png)'),
 });
 
 export type GenerateChartInput = z.infer<typeof GenerateChartInputSchema>;
@@ -37,6 +48,25 @@ export async function generateChartTool(
     const client = createChartImgClient();
     const config = input.config as ChartConfig;
 
+    // Special handling for saveToFile mode - use direct file writing to avoid token limits
+    if (!input.storage && input.saveToFile) {
+      // Generate filename
+      const timestamp = Date.now();
+      const filename = input.filename || `chart-${timestamp}.${input.format || 'png'}`;
+      const tmpDir = os.tmpdir();
+      const filePath = path.join(tmpDir, filename);
+
+      // Generate chart directly to file (no base64 in memory)
+      const result = await client.generateChartToFile(
+        config,
+        filePath,
+        input.format
+      );
+
+      return result;
+    }
+
+    // Normal mode: return URL from storage endpoint or base64 data
     const result = await client.generateChart(
       config,
       input.storage,
@@ -72,21 +102,24 @@ This is the **final step** in the chart generation workflow. It:
 
 **Two Output Modes:**
 
-**Storage Mode** (storage: true, DEFAULT):
+**Storage Mode** (storage: true, DEFAULT, RECOMMENDED):
 - Image is stored publicly on chart-img.com
 - Returns a URL that expires after 7 days
-- Best for: Embedding in messages, presentations, sharing
-- Example: "https://api.chart-img.com/storage/abc123.png"
+- Best for: Embedding in messages, presentations, sharing, reliable chart generation
+- Example: "https://r2.chart-img.com/..."
+- ✅ No token limits, works reliably in all environments
 
 **Direct Mode** (storage: false):
 - Returns base64-encoded image data
 - No expiration, but larger response
 - Best for: Immediate display, local processing
+- ⚠️ saveToFile parameter available but may hit MCP token limits (Claude Code limitation)
 
 **Returns:**
 - \`success\`: Boolean indicating generation success
 - \`imageUrl\`: Public URL (if storage=true)
-- \`imageData\`: Base64 data (if storage=false)
+- \`imageData\`: Base64 data (if storage=false) or save confirmation message
+- \`localPath\`: Local file path (if saveToFile=true)
 - \`metadata\`: Format, resolution, timestamps
 - \`apiResponse\`: Status code, rate limit info
 
@@ -130,6 +163,15 @@ Note: Requires valid CHART_IMG_API_KEY environment variable.`,
         enum: ['png', 'jpeg'] as const,
         description: 'Image format. Default: png',
         default: 'png',
+      },
+      saveToFile: {
+        type: 'boolean' as const,
+        description: 'When storage=false, automatically save to /tmp for AI analysis. Default: false',
+        default: false,
+      },
+      filename: {
+        type: 'string' as const,
+        description: 'Custom filename when saveToFile=true (default: chart-{timestamp}.png)',
       },
     },
     required: ['config'] as const,
