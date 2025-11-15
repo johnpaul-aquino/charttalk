@@ -182,4 +182,10 @@ Note: Requires valid CHART_IMG_API_KEY environment variable.`,
     },
     required: ['config'] as const,
   } as const,
+  annotations: {
+    title: 'Generate Chart Image',
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+  },
 };

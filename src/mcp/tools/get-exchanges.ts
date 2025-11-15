@@ -88,4 +88,10 @@ Results are cached for 1 hour to improve performance.`,
       },
     },
   } as const,
+  annotations: {
+    title: 'Get Exchanges',
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+  },
 };

@@ -208,41 +208,49 @@ class ChartImgMCPServer {
         name: healthCheckToolDefinition.name,
         description: healthCheckToolDefinition.description,
         inputSchema: healthCheckToolDefinition.inputSchema,
+        annotations: healthCheckToolDefinition.annotations,
       },
       {
         name: fetchDocumentationToolDefinition.name,
         description: fetchDocumentationToolDefinition.description,
         inputSchema: fetchDocumentationToolDefinition.inputSchema,
+        annotations: fetchDocumentationToolDefinition.annotations,
       },
       {
         name: getExchangesToolDefinition.name,
         description: getExchangesToolDefinition.description,
         inputSchema: getExchangesToolDefinition.inputSchema,
+        annotations: getExchangesToolDefinition.annotations,
       },
       {
         name: getSymbolsToolDefinition.name,
         description: getSymbolsToolDefinition.description,
         inputSchema: getSymbolsToolDefinition.inputSchema,
+        annotations: getSymbolsToolDefinition.annotations,
       },
       {
         name: constructChartConfigToolDefinition.name,
         description: constructChartConfigToolDefinition.description,
         inputSchema: constructChartConfigToolDefinition.inputSchema,
+        annotations: constructChartConfigToolDefinition.annotations,
       },
       {
         name: validateConfigToolDefinition.name,
         description: validateConfigToolDefinition.description,
         inputSchema: validateConfigToolDefinition.inputSchema,
+        annotations: validateConfigToolDefinition.annotations,
       },
       {
         name: generateChartToolDefinition.name,
         description: generateChartToolDefinition.description,
         inputSchema: generateChartToolDefinition.inputSchema,
+        annotations: generateChartToolDefinition.annotations,
       },
       {
         name: saveChartImageToolDefinition.name,
         description: saveChartImageToolDefinition.description,
         inputSchema: saveChartImageToolDefinition.inputSchema,
+        annotations: saveChartImageToolDefinition.annotations,
       },
     ];
   }

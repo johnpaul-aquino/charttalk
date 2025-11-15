@@ -129,4 +129,10 @@ Results are cached per exchange for 1 hour.`,
     },
     required: ['exchange'] as const,
   } as const,
+  annotations: {
+    title: 'Get Symbols',
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+  },
 };

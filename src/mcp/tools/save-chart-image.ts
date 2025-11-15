@@ -135,4 +135,10 @@ const saved = await save_chart_image({
     },
     required: ['imageData'] as const,
   } as const,
+  annotations: {
+    title: 'Save Chart Image',
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+  },
 };

@@ -119,4 +119,10 @@ Example errors:
     },
     required: ['config'] as const,
   } as const,
+  annotations: {
+    title: 'Validate Chart Config',
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+  },
 };

@@ -106,4 +106,10 @@ The documentation is cached for 24 hours to improve performance.`,
       },
     },
   } as const,
+  annotations: {
+    title: 'Fetch Chart Documentation',
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+  },
 };

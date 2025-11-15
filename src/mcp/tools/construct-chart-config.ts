@@ -160,4 +160,10 @@ Returns:
     },
     required: ['naturalLanguage'] as const,
   } as const,
+  annotations: {
+    title: 'Construct Chart Config',
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+  },
 };

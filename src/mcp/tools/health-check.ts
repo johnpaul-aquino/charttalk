@@ -181,4 +181,10 @@ Example response:
     type: 'object' as const,
     properties: {},
   } as const,
+  annotations: {
+    title: 'Health Check',
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+  },
 };
