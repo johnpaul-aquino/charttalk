@@ -298,7 +298,7 @@ Claude Desktop now supports **Extensions** (`.mcpb` format) for easier installat
 
 ## Available MCP Tools
 
-Once connected, Claude has access to these 8 tools:
+Once connected, Claude has access to these 9 tools:
 
 ### 1. `health_check`
 **Purpose**: Test server connection and get status information
@@ -343,6 +343,16 @@ Once connected, Claude has access to these 8 tools:
 
 **Example**:
 > "Generate the chart and show it to me"
+
+### 8. `upload_chart_to_s3`
+**Purpose**: Upload chart image to AWS S3 for permanent storage
+
+**Example**:
+> "Upload this chart to S3 for permanent storage"
+
+**Returns**: Permanent S3 URL (never expires), bucket, key, size, metadata
+
+**Note**: Requires AWS credentials in `.env` file
 
 ---
 
@@ -449,6 +459,98 @@ Generated Chart Image
     ↓
 Displayed in Claude
 ```
+
+### Best Practice Workflow for Claude Desktop
+
+This is the **recommended workflow** that works perfectly in both **Claude Code** and **Claude Desktop**. It saves charts locally for immediate analysis, then uploads to S3 for permanent storage.
+
+#### Why This Workflow?
+
+- ✅ **Works in Claude Desktop**: Saves locally first (no URL fetching needed)
+- ✅ **Memory efficient**: Streams directly to disk (no base64 in memory)
+- ✅ **Immediate analysis**: Chart available for AI visual analysis
+- ✅ **Permanent storage**: S3 upload creates never-expiring URL
+- ✅ **Single API call**: One request to chart-img.com
+
+#### Step-by-Step Workflow
+
+**Step 1: Construct Chart Configuration**
+```javascript
+// Natural language → Chart config
+const config = await construct_chart_config({
+  naturalLanguage: "Bitcoin with RSI and MACD for the last 7 days",
+  preferences: {
+    theme: "dark",
+    resolution: "1200x800"
+  }
+});
+// Returns: { symbol: "BINANCE:BTCUSDT", interval: "4h", range: "1M", ... }
+```
+
+**Step 2: Generate and Save Locally**
+```javascript
+// Generate chart and save to /tmp (Claude Desktop can read this)
+const chart = await generate_chart_image({
+  config: config.config,
+  storage: false,        // ← No cloud storage (memory efficient)
+  saveToFile: true,      // ← Save to /tmp automatically
+  filename: "btc-analysis.png",
+  format: "png"
+});
+// Returns: { localPath: "/tmp/btc-analysis.png", metadata: {...} }
+```
+
+**Step 3: Analyze Chart (Claude Desktop)**
+```
+Claude Desktop reads /tmp/btc-analysis.png and performs visual analysis:
+- Identifies price action (downtrend from $118K to $96K)
+- Detects support/resistance levels
+- Provides trading recommendations
+```
+
+**Step 4: Upload to S3 for Permanent Storage**
+```javascript
+// Upload to S3 (permanent URL, never expires)
+const s3Result = await upload_chart_to_s3({
+  imageData: fs.readFileSync(chart.localPath, 'base64'),
+  metadata: {
+    symbol: "BINANCE:BTCUSDT",
+    interval: "4h",
+    indicators: ["RSI", "MACD"],
+    generatedAt: chart.metadata.generatedAt
+  }
+});
+// Returns: { url: "https://s3-bucket.s3.region.amazonaws.com/charts/...", ... }
+```
+
+#### Complete Example (Real World)
+
+```
+User: "Show me Bitcoin with RSI and MACD for the last 7 days, analyze it, and save permanently"
+
+Claude Response:
+1. Constructs config: BINANCE:BTCUSDT, 4h, 1M range
+2. Generates chart → /tmp/btc-chart-<timestamp>.png
+3. Analyzes chart visually:
+   - Current price: $96,042.50
+   - Bearish trend from $118K high
+   - Key support at $94K-$96K range
+   - Resistance at $106K-$107K
+4. Uploads to S3 → https://s3-bucket.s3.../BTCUSDT-4h-<timestamp>.png
+
+Result:
+- ✅ Chart analyzed
+- ✅ Permanent S3 URL (never expires)
+- ✅ Local file available for further analysis
+```
+
+#### Comparison: Alternative Workflows
+
+| Workflow | Use When | Pros | Cons |
+|----------|----------|------|------|
+| **Best Practice** (saveToFile:true + S3) | Claude Desktop, comprehensive analysis | Works everywhere, permanent storage, memory efficient | Requires AWS S3 setup |
+| **Cloud URL only** (storage:true) | Claude Code, quick charts | Simple, no S3 needed | URL expires in 7 days, Claude Desktop can't fetch URLs |
+| **Direct base64** (storage:false, no save) | Small charts, immediate use | Single response | Large token usage, no permanent storage |
 
 ---
 
@@ -840,6 +942,454 @@ curl "http://localhost:3010/api/v1/exchanges/BINANCE/symbols?search=BTC&limit=10
 curl http://localhost:3010/api/v1/health
 ```
 
+### REST API Best Practice Workflow
+
+This section shows the **recommended workflow** for using the REST API to generate charts with local analysis and permanent S3 storage - matching the best practice workflow available in MCP tools.
+
+#### Why This Workflow?
+
+The multi-call REST approach offers several advantages:
+
+- ✅ **More RESTful** - Single responsibility per endpoint
+- ✅ **More flexible** - Skip S3 upload for testing, use local-only mode
+- ✅ **Better error handling** - Each operation succeeds/fails independently
+- ✅ **Better monitoring** - Track rate limits per operation
+- ✅ **Production ready** - Clean separation of concerns
+
+#### Complete Workflow Overview
+
+```
+Step 1: Construct Config (Natural Language → Chart Config)
+   ↓
+Step 2: Generate Chart (Save Locally for Analysis)
+   ↓
+Step 3: Analyze Chart (Client-Side AI Analysis)
+   ↓
+Step 4: Upload to S3 (Permanent Storage)
+   ↓
+Result: Local file + Permanent S3 URL + Analysis
+```
+
+#### Step-by-Step Guide
+
+**Step 1: Construct Chart Configuration**
+
+Convert natural language to chart configuration:
+
+```bash
+POST /api/v1/charts/construct
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Bitcoin with RSI and MACD for the last 7 days",
+  "preferences": {
+    "theme": "dark",
+    "resolution": "1200x800"
+  }
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "config": {
+      "symbol": "BINANCE:BTCUSDT",
+      "interval": "4h",
+      "range": "1M",
+      "theme": "dark",
+      "width": 1200,
+      "height": 800
+    },
+    "reasoning": "Symbol: BINANCE:BTCUSDT | Interval: 4h | Range: 1M"
+  }
+}
+```
+
+**Step 2: Generate Chart and Save Locally**
+
+Generate chart WITHOUT cloud storage, save to local disk:
+
+```bash
+POST /api/v1/charts/generate
+Content-Type: application/json
+
+{
+  "config": { /* config from step 1 */ },
+  "storage": false,        # No chart-img.com cloud storage
+  "saveToFile": true,      # Save to /tmp directory
+  "format": "png"
+}
+```
+
+**Why `storage: false`?**
+- Avoids 7-day expiration
+- Reduces API quota usage
+- Faster response (no upload to chart-img.com cloud)
+- Perfect for local analysis
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "localPath": "/tmp/chart-1731705600000.png",
+    "metadata": {
+      "format": "PNG",
+      "resolution": "1200x800",
+      "generatedAt": "2025-11-16T02:00:00.000Z"
+    }
+  }
+}
+```
+
+**Step 3: Analyze Chart (Client-Side)**
+
+Read the local file and perform AI analysis:
+
+```javascript
+// Node.js example
+const fs = require('fs');
+const chartPath = chartData.data.localPath;
+const chartBuffer = fs.readFileSync(chartPath);
+
+// Send to AI for analysis (your AI service)
+const analysis = await analyzeChartImage(chartBuffer);
+// Returns: trend analysis, support/resistance, trading signals
+```
+
+**Step 4: Upload to S3 for Permanent Storage**
+
+Upload the local chart to S3 for never-expiring storage:
+
+```bash
+POST /api/v1/storage/s3
+Content-Type: application/json
+
+{
+  "imageData": "base64-encoded-data",  # From local file
+  "metadata": {
+    "symbol": "BINANCE:BTCUSDT",
+    "interval": "4h",
+    "indicators": ["RSI", "MACD"],
+    "generatedAt": "2025-11-16T02:00:00.000Z"
+  }
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "url": "https://s3-bucket.s3.region.amazonaws.com/charts/2025/11/BTCUSDT-4h-timestamp.png",
+    "bucket": "s3-bucket",
+    "key": "charts/2025/11/BTCUSDT-4h-timestamp.png",
+    "size": 31640,
+    "uploadedAt": "2025-11-16T02:00:15.000Z"
+  }
+}
+```
+
+#### Complete Examples
+
+**JavaScript/TypeScript - Full Workflow**
+
+```typescript
+async function generateAndAnalyzeChart(naturalLanguage: string) {
+  const baseURL = 'http://localhost:3010/api/v1';
+
+  // Step 1: Construct configuration
+  const configResponse = await fetch(`${baseURL}/charts/construct`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ naturalLanguage })
+  });
+  const { data: configData } = await configResponse.json();
+
+  // Step 2: Generate chart locally
+  const chartResponse = await fetch(`${baseURL}/charts/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      config: configData.config,
+      storage: false,      // No cloud storage
+      saveToFile: true     // Save to /tmp
+    })
+  });
+  const { data: chartData } = await chartResponse.json();
+
+  // Step 3: Read local file for analysis
+  const fs = require('fs');
+  const chartBuffer = fs.readFileSync(chartData.localPath);
+  const base64Data = chartBuffer.toString('base64');
+
+  // Analyze chart (your AI service here)
+  console.log(`Chart saved to: ${chartData.localPath}`);
+  console.log(`Chart ready for AI analysis`);
+
+  // Step 4: Upload to S3 for permanent storage
+  const s3Response = await fetch(`${baseURL}/storage/s3`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      imageData: base64Data,
+      metadata: {
+        symbol: configData.config.symbol,
+        interval: configData.config.interval,
+        generatedAt: chartData.metadata.generatedAt
+      }
+    })
+  });
+  const { data: s3Data } = await s3Response.json();
+
+  return {
+    config: configData.config,
+    localPath: chartData.localPath,        // For immediate analysis
+    permanentUrl: s3Data.url,              // Never expires
+    s3Key: s3Data.key,
+    metadata: chartData.metadata
+  };
+}
+
+// Usage
+const result = await generateAndAnalyzeChart(
+  "Bitcoin with RSI and MACD for the last 7 days"
+);
+
+console.log('Local file:', result.localPath);
+console.log('Permanent URL:', result.permanentUrl);
+```
+
+**Python - Full Workflow**
+
+```python
+import requests
+import base64
+
+def generate_and_analyze_chart(natural_language: str):
+    base_url = 'http://localhost:3010/api/v1'
+
+    # Step 1: Construct configuration
+    config_response = requests.post(
+        f'{base_url}/charts/construct',
+        json={'naturalLanguage': natural_language}
+    )
+    config_data = config_response.json()['data']
+
+    # Step 2: Generate chart locally
+    chart_response = requests.post(
+        f'{base_url}/charts/generate',
+        json={
+            'config': config_data['config'],
+            'storage': False,      # No cloud storage
+            'saveToFile': True     # Save to /tmp
+        }
+    )
+    chart_data = chart_response.json()['data']
+
+    # Step 3: Read local file for analysis
+    with open(chart_data['localPath'], 'rb') as f:
+        chart_bytes = f.read()
+        base64_data = base64.b64encode(chart_bytes).decode('utf-8')
+
+    print(f"Chart saved to: {chart_data['localPath']}")
+    print(f"Chart ready for AI analysis")
+
+    # Step 4: Upload to S3 for permanent storage
+    s3_response = requests.post(
+        f'{base_url}/storage/s3',
+        json={
+            'imageData': base64_data,
+            'metadata': {
+                'symbol': config_data['config']['symbol'],
+                'interval': config_data['config']['interval'],
+                'generatedAt': chart_data['metadata']['generatedAt']
+            }
+        }
+    )
+    s3_data = s3_response.json()['data']
+
+    return {
+        'config': config_data['config'],
+        'local_path': chart_data['localPath'],
+        'permanent_url': s3_data['url'],
+        's3_key': s3_data['key'],
+        'metadata': chart_data['metadata']
+    }
+
+# Usage
+result = generate_and_analyze_chart(
+    "Bitcoin with RSI and MACD for the last 7 days"
+)
+
+print(f"Local file: {result['local_path']}")
+print(f"Permanent URL: {result['permanent_url']}")
+```
+
+**cURL - Step-by-Step**
+
+```bash
+#!/bin/bash
+
+# Step 1: Construct configuration
+CONFIG=$(curl -s -X POST http://localhost:3010/api/v1/charts/construct \
+  -H "Content-Type: application/json" \
+  -d '{
+    "naturalLanguage": "Bitcoin with RSI and MACD for the last 7 days"
+  }' | jq '.data.config')
+
+# Step 2: Generate chart locally
+CHART=$(curl -s -X POST http://localhost:3010/api/v1/charts/generate \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"config\": $CONFIG,
+    \"storage\": false,
+    \"saveToFile\": true
+  }")
+
+LOCAL_PATH=$(echo $CHART | jq -r '.data.localPath')
+echo "Chart saved to: $LOCAL_PATH"
+
+# Step 3: Read file and convert to base64
+BASE64_DATA=$(base64 -i "$LOCAL_PATH" | tr -d '\n')
+
+# Step 4: Upload to S3
+S3_RESULT=$(curl -s -X POST http://localhost:3010/api/v1/storage/s3 \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"imageData\": \"$BASE64_DATA\",
+    \"metadata\": {
+      \"symbol\": \"BINANCE:BTCUSDT\",
+      \"interval\": \"4h\"
+    }
+  }")
+
+S3_URL=$(echo $S3_RESULT | jq -r '.data.url')
+echo "Permanent URL: $S3_URL"
+```
+
+#### Workflow Comparison: MCP Tools vs REST API
+
+| Aspect | MCP Tools | REST API |
+|--------|-----------|----------|
+| **Single Call** | ✅ `uploadToS3: true` in one tool call | ❌ Requires 2-4 calls (construct → generate → upload) |
+| **Flexibility** | ⚠️ All-or-nothing parameter | ✅ Skip S3 if not needed, local-only mode |
+| **Error Handling** | ⚠️ If S3 fails, whole call may fail | ✅ Each operation independent |
+| **Rate Limiting** | ⚠️ Single tool rate limit | ✅ Separate limits per endpoint |
+| **Best For** | Claude Desktop users, simple workflows | Production apps, web services, mobile apps |
+| **Programming** | MCP protocol required | Standard HTTP (works everywhere) |
+| **Monitoring** | Limited visibility | ✅ Track each step separately |
+
+**When to use MCP Tools**: Claude Desktop integration, conversational AI workflows
+
+**When to use REST API**: Web apps, mobile apps, microservices, production systems
+
+#### Error Handling Best Practices
+
+```typescript
+async function generateChartWithErrorHandling(naturalLanguage: string) {
+  try {
+    // Step 1: Construct
+    const configResponse = await fetch(`${baseURL}/charts/construct`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ naturalLanguage })
+    });
+
+    if (!configResponse.ok) {
+      const error = await configResponse.json();
+      throw new Error(`Config construction failed: ${error.error.message}`);
+    }
+
+    const { data: configData } = await configResponse.json();
+
+    // Step 2: Generate locally
+    const chartResponse = await fetch(`${baseURL}/charts/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        config: configData.config,
+        storage: false,
+        saveToFile: true
+      })
+    });
+
+    if (!chartResponse.ok) {
+      const error = await chartResponse.json();
+      throw new Error(`Chart generation failed: ${error.error.message}`);
+    }
+
+    const { data: chartData } = await chartResponse.json();
+
+    // Step 3: Upload to S3 (optional - continue even if fails)
+    try {
+      const fs = require('fs');
+      const base64Data = fs.readFileSync(chartData.localPath).toString('base64');
+
+      const s3Response = await fetch(`${baseURL}/storage/s3`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageData: base64Data,
+          metadata: {
+            symbol: configData.config.symbol,
+            interval: configData.config.interval
+          }
+        })
+      });
+
+      if (s3Response.ok) {
+        const { data: s3Data } = await s3Response.json();
+        return {
+          ...chartData,
+          s3Url: s3Data.url,
+          s3Key: s3Data.key
+        };
+      } else {
+        console.warn('S3 upload failed, but local chart available');
+        return chartData;  // Still have local file
+      }
+    } catch (s3Error) {
+      console.warn('S3 upload error:', s3Error);
+      return chartData;  // Still have local file
+    }
+
+  } catch (error) {
+    console.error('Chart generation workflow failed:', error);
+    throw error;
+  }
+}
+```
+
+#### Rate Limiting Awareness
+
+The REST API uses token bucket rate limiting with different limits per endpoint:
+
+```typescript
+// Rate limit headers in response
+{
+  "X-RateLimit-Remaining": "19",
+  "X-RateLimit-Reset": "2025-11-16T02:00:30Z"
+}
+
+// Check before making calls
+if (response.headers.get('X-RateLimit-Remaining') < 5) {
+  const resetTime = new Date(response.headers.get('X-RateLimit-Reset'));
+  const waitTime = resetTime - Date.now();
+  console.log(`Rate limit low, waiting ${waitTime}ms`);
+  await new Promise(resolve => setTimeout(resolve, waitTime));
+}
+```
+
+**Endpoint Limits** (default configuration):
+- **Construct/Validate**: 20 burst, 10/sec refill
+- **Generate**: 10 burst, 2/sec refill (stricter - expensive operation)
+- **S3 Upload**: 10 burst, 5/sec refill
+
+**Best Practice**: Implement exponential backoff when rate limits are hit.
+
 ### Architecture
 
 The REST API is built with:
@@ -887,6 +1437,303 @@ NODE_ENV=production
 npm run build
 npm start
 ```
+
+### AWS S3 Storage (Permanent Chart Storage)
+
+The server now supports **permanent chart storage** in AWS S3, replacing the 7-day expiration limit of chart-img.com URLs.
+
+#### Why Use S3 Storage?
+
+| Feature | chart-img.com | AWS S3 |
+|---------|---------------|--------|
+| **URL Expiration** | 7 days | Never (permanent) |
+| **Storage Control** | chart-img.com servers | Your AWS account |
+| **CDN Support** | Limited | CloudFront integration |
+| **Metadata Tagging** | No | Yes (symbol, interval, etc.) |
+| **Cost** | Included in plan | Pay-as-you-go (~$0.023/GB) |
+
+#### Setup AWS S3
+
+1. **Create S3 Bucket** (via AWS Console or CLI):
+```bash
+aws s3api create-bucket \
+  --bucket my-trading-charts \
+  --region us-east-1 \
+  --acl public-read
+```
+
+2. **Create IAM User** with S3 permissions:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::my-trading-charts/*",
+        "arn:aws:s3:::my-trading-charts"
+      ]
+    }
+  ]
+}
+```
+
+3. **Add Credentials to `.env`**:
+```bash
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=my-trading-charts
+AWS_S3_BUCKET_REGION=us-east-1
+
+# Optional: CloudFront CDN
+AWS_CLOUDFRONT_DOMAIN=d123abc.cloudfront.net
+```
+
+4. **Restart Server** to load new credentials:
+```bash
+npm run dev
+```
+
+#### MCP Tool: `upload_chart_to_s3`
+
+**Usage in Claude Code**:
+> "Generate a Bitcoin chart with RSI, then upload it to S3 for permanent storage"
+
+**Workflow**:
+1. Generate chart with `generate_chart_image` (returns 7-day URL)
+2. Upload to S3 with `upload_chart_to_s3` (returns permanent URL)
+
+**Example**:
+```typescript
+// Step 1: Generate chart (temporary URL)
+const chart = await generate_chart_image({
+  config: { symbol: "BINANCE:BTCUSDT", interval: "4h", range: "1M" }
+});
+// chart.imageUrl = "https://r2.chart-img.com/..." (expires in 7 days)
+
+// Step 2: Upload to S3 (permanent URL)
+const s3Result = await upload_chart_to_s3({
+  imageUrl: chart.imageUrl,
+  metadata: {
+    symbol: "BINANCE:BTCUSDT",
+    interval: "4h",
+    indicators: ["RSI", "MACD"]
+  }
+});
+// s3Result.url = "https://my-bucket.s3.us-east-1.amazonaws.com/charts/..." (never expires)
+```
+
+#### REST API Endpoint: `POST /api/v1/storage/s3`
+
+**Upload from URL**:
+```bash
+curl -X POST http://localhost:3010/api/v1/storage/s3 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "imageUrl": "https://r2.chart-img.com/...",
+    "metadata": {
+      "symbol": "BINANCE:BTCUSDT",
+      "interval": "4h",
+      "indicators": ["RSI", "MACD"],
+      "generatedAt": "2025-11-16T10:30:00Z"
+    }
+  }'
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "url": "https://my-trading-charts.s3.us-east-1.amazonaws.com/charts/2025/11/BTCUSDT-4h-20251116T103000-abc12345.png",
+    "bucket": "my-trading-charts",
+    "key": "charts/2025/11/BTCUSDT-4h-20251116T103000-abc12345.png",
+    "size": 245678,
+    "uploadedAt": "2025-11-16T10:30:15Z",
+    "metadata": {
+      "symbol": "BINANCE:BTCUSDT",
+      "interval": "4h",
+      "indicators": "RSI,MACD",
+      "source": "chart-img.com"
+    }
+  }
+}
+```
+
+**Upload from Base64**:
+```bash
+curl -X POST http://localhost:3010/api/v1/storage/s3 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "imageData": "iVBORw0KGgoAAAANSUhEUgAA...",
+    "metadata": {
+      "symbol": "BINANCE:ETHUSDT",
+      "interval": "1D"
+    }
+  }'
+```
+
+#### JavaScript/TypeScript Example
+
+```typescript
+// Full workflow: Generate → Upload to S3 → Get permanent URL
+async function generateAndStoreChart(symbol: string, interval: string) {
+  // 1. Construct config from natural language
+  const configResponse = await fetch('http://localhost:3010/api/v1/charts/construct', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      naturalLanguage: `${symbol} chart with RSI and MACD, ${interval} timeframe, last month`
+    })
+  });
+  const { data: configData } = await configResponse.json();
+
+  // 2. Generate chart (7-day URL)
+  const chartResponse = await fetch('http://localhost:3010/api/v1/charts/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      config: configData.config,
+      storage: true
+    })
+  });
+  const { data: chartData } = await chartResponse.json();
+
+  // 3. Upload to S3 (permanent URL)
+  const s3Response = await fetch('http://localhost:3010/api/v1/storage/s3', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      imageUrl: chartData.imageUrl,
+      metadata: {
+        symbol: configData.config.symbol,
+        interval: configData.config.interval,
+        indicators: ['RSI', 'MACD']
+      }
+    })
+  });
+  const { data: s3Data } = await s3Response.json();
+
+  return {
+    temporaryUrl: chartData.imageUrl,  // Expires in 7 days
+    permanentUrl: s3Data.url,          // Never expires
+    s3Key: s3Data.key,
+    metadata: s3Data.metadata
+  };
+}
+
+// Usage
+const result = await generateAndStoreChart('BINANCE:BTCUSDT', '4h');
+console.log('Permanent chart URL:', result.permanentUrl);
+```
+
+#### Python Example
+
+```python
+import requests
+
+def generate_and_store_chart(symbol: str, interval: str):
+    # 1. Construct config
+    config_response = requests.post(
+        'http://localhost:3010/api/v1/charts/construct',
+        json={
+            'naturalLanguage': f'{symbol} chart with RSI and MACD, {interval} timeframe, last month'
+        }
+    )
+    config_data = config_response.json()['data']
+
+    # 2. Generate chart (7-day URL)
+    chart_response = requests.post(
+        'http://localhost:3010/api/v1/charts/generate',
+        json={
+            'config': config_data['config'],
+            'storage': True
+        }
+    )
+    chart_data = chart_response.json()['data']
+
+    # 3. Upload to S3 (permanent URL)
+    s3_response = requests.post(
+        'http://localhost:3010/api/v1/storage/s3',
+        json={
+            'imageUrl': chart_data['imageUrl'],
+            'metadata': {
+                'symbol': config_data['config']['symbol'],
+                'interval': config_data['config']['interval'],
+                'indicators': ['RSI', 'MACD']
+            }
+        }
+    )
+    s3_data = s3_response.json()['data']
+
+    return {
+        'temporary_url': chart_data['imageUrl'],  # Expires in 7 days
+        'permanent_url': s3_data['url'],          # Never expires
+        's3_key': s3_data['key'],
+        'metadata': s3_data['metadata']
+    }
+
+# Usage
+result = generate_and_store_chart('BINANCE:BTCUSDT', '4h')
+print(f"Permanent chart URL: {result['permanent_url']}")
+```
+
+#### S3 Object Key Structure
+
+Charts are organized by date for easy management:
+
+```
+charts/
+  2025/
+    11/
+      BTCUSDT-4h-20251116T103000-abc12345.png
+      ETHUSDT-1D-20251116T143000-def67890.png
+    12/
+      BTCUSDT-1h-20251201T090000-ghi11121.png
+```
+
+**Key Format**: `charts/{year}/{month}/{symbol}-{interval}-{timestamp}-{hash}.png`
+
+#### CloudFront CDN (Optional)
+
+For faster global delivery, configure CloudFront:
+
+1. **Create CloudFront Distribution**:
+   - Origin: S3 bucket
+   - Viewer Protocol: HTTPS only
+   - Cache behavior: Cache based on query strings
+
+2. **Add to `.env`**:
+```bash
+AWS_CLOUDFRONT_DOMAIN=d123abc.cloudfront.net
+```
+
+3. **URLs will automatically use CloudFront**:
+```
+https://d123abc.cloudfront.net/charts/2025/11/BTCUSDT-4h-20251116T103000-abc12345.png
+```
+
+#### Storage Costs
+
+AWS S3 pricing (as of 2025):
+
+| Storage | Cost |
+|---------|------|
+| First 50 TB/month | $0.023 per GB |
+| Next 450 TB/month | $0.022 per GB |
+
+**Example**: Storing 1,000 charts (average 250KB each):
+- Total size: 250 MB
+- Monthly cost: ~$0.006 (less than 1 cent!)
+
+**Data Transfer**: First 100 GB/month free, then $0.09/GB
 
 ---
 

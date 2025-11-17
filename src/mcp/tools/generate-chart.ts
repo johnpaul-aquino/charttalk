@@ -5,14 +5,16 @@
  */
 
 import { z } from 'zod';
-import { container, CHART_GENERATION_SERVICE } from '../../core/di';
+import { container, CHART_GENERATION_SERVICE, S3_STORAGE_SERVICE } from '../../core/di';
 import type {
   IChartGenerationService,
   ChartConfig,
   ChartGenerationResult
 } from '../../modules/chart';
+import type { ICloudStorageService } from '../../modules/storage';
 import path from 'path';
 import os from 'os';
+import fs from 'fs/promises';
 
 // Input schema
 export const GenerateChartInputSchema = z.object({
@@ -36,6 +38,11 @@ export const GenerateChartInputSchema = z.object({
     .string()
     .optional()
     .describe('Custom filename when saveToFile=true (default: chart-{timestamp}.png)'),
+  uploadToS3: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe('When saveToFile=true, also upload to S3 for permanent storage. Requires AWS credentials configured.'),
 });
 
 export type GenerateChartInput = z.infer<typeof GenerateChartInputSchema>;
@@ -68,6 +75,42 @@ export async function generateChartTool(
         filePath,
         input.format
       );
+
+      // Upload to S3 if requested
+      if (input.uploadToS3 && result.success && result.localPath) {
+        try {
+          const s3Service = container.resolve<ICloudStorageService>(S3_STORAGE_SERVICE);
+
+          // Read file and convert to base64
+          const fileBuffer = await fs.readFile(result.localPath);
+          const base64Data = fileBuffer.toString('base64');
+
+          // Extract symbol and interval from config for metadata
+          const symbol = config.symbol || 'UNKNOWN';
+          const interval = config.interval || 'UNKNOWN';
+
+          // Upload to S3
+          const s3Result = await s3Service.uploadBase64(base64Data, {
+            symbol,
+            interval,
+            generatedAt: result.metadata.generatedAt,
+          });
+
+          // Add S3 URL to result
+          return {
+            ...result,
+            s3Url: s3Result.url,
+            s3Key: s3Result.key,
+            s3UploadedAt: s3Result.uploadedAt,
+          };
+        } catch (s3Error) {
+          // If S3 upload fails, still return the local file result
+          return {
+            ...result,
+            s3Error: s3Error instanceof Error ? s3Error.message : 'S3 upload failed',
+          };
+        }
+      }
 
       return result;
     }
@@ -121,11 +164,22 @@ This is the **final step** in the chart generation workflow. It:
 - Best for: Immediate display, local processing
 - ⚠️ saveToFile parameter available but may hit MCP token limits (Claude Code limitation)
 
+**Best Practice Mode** (storage: false, saveToFile: true, uploadToS3: true):
+- Saves chart locally to /tmp (Claude Desktop can read it)
+- Automatically uploads to S3 for permanent storage
+- Returns both localPath and s3Url
+- Best for: Claude Desktop analysis + permanent archival
+- ✅ Works in Claude Desktop, memory efficient, never expires
+
 **Returns:**
 - \`success\`: Boolean indicating generation success
 - \`imageUrl\`: Public URL (if storage=true)
 - \`imageData\`: Base64 data (if storage=false) or save confirmation message
 - \`localPath\`: Local file path (if saveToFile=true)
+- \`s3Url\`: Permanent S3 URL (if uploadToS3=true)
+- \`s3Key\`: S3 object key (if uploadToS3=true)
+- \`s3UploadedAt\`: S3 upload timestamp (if uploadToS3=true)
+- \`s3Error\`: Error message if S3 upload fails (optional)
 - \`metadata\`: Format, resolution, timestamps
 - \`apiResponse\`: Status code, rate limit info
 
@@ -178,6 +232,11 @@ Note: Requires valid CHART_IMG_API_KEY environment variable.`,
       filename: {
         type: 'string' as const,
         description: 'Custom filename when saveToFile=true (default: chart-{timestamp}.png)',
+      },
+      uploadToS3: {
+        type: 'boolean' as const,
+        description: 'When saveToFile=true, also upload to S3 for permanent storage. Default: false',
+        default: false,
       },
     },
     required: ['config'] as const,

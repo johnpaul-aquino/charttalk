@@ -17,8 +17,6 @@ import { DrawingsRepository } from '../../modules/chart/repositories/drawings.re
 // Storage Module
 import { ChartStorageService } from '../../modules/storage/services/chart-storage.service';
 import { DownloadService } from '../../modules/storage/services/download.service';
-import { S3ClientService } from '../../modules/storage/services/s3-client.service';
-import { S3StorageService } from '../../modules/storage/services/s3-storage.service';
 
 // Core
 import { createChartImgClient } from '../../mcp/utils/chart-img-client';
@@ -83,16 +81,5 @@ export function registerProviders(container: DIContainer): void {
   container.registerSingleton(tokens.CHART_STORAGE_SERVICE, (c) => {
     const downloadService = c.resolve<DownloadService>(tokens.DOWNLOAD_SERVICE);
     return new ChartStorageService(downloadService);
-  });
-
-  // S3ClientService (no dependencies)
-  container.registerSingleton(tokens.S3_CLIENT_SERVICE, () => {
-    return new S3ClientService();
-  });
-
-  // S3StorageService (depends on S3ClientService)
-  container.registerSingleton(tokens.S3_STORAGE_SERVICE, (c) => {
-    const s3Client = c.resolve<S3ClientService>(tokens.S3_CLIENT_SERVICE);
-    return new S3StorageService(s3Client);
   });
 }

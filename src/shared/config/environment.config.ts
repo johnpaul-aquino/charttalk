@@ -20,6 +20,18 @@ export interface AppConfig {
     requestsPerSecond: number;
     dailyLimit: number;
   };
+  aws: {
+    accessKeyId?: string;
+    secretAccessKey?: string;
+    region: string;
+    s3: {
+      bucket: string;
+      bucketRegion: string;
+      storageClass: string;
+      defaultTtlDays: number;
+      cloudFrontDomain?: string;
+    };
+  };
   cache: {
     documentationTtl: number; // milliseconds
     exchangesTtl: number;
@@ -55,6 +67,18 @@ export function loadConfig(): AppConfig {
       apiKey,
       requestsPerSecond: parseInt(process.env.CHART_IMG_RPS || String(planLimits.rps)),
       dailyLimit: parseInt(process.env.CHART_IMG_DAILY_LIMIT || String(planLimits.daily)),
+    },
+    aws: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: process.env.AWS_REGION || 'us-east-1',
+      s3: {
+        bucket: process.env.AWS_S3_BUCKET || '',
+        bucketRegion: process.env.AWS_S3_BUCKET_REGION || process.env.AWS_REGION || 'us-east-1',
+        storageClass: process.env.AWS_S3_STORAGE_CLASS || 'STANDARD',
+        defaultTtlDays: parseInt(process.env.AWS_S3_DEFAULT_TTL_DAYS || '0'),
+        cloudFrontDomain: process.env.AWS_CLOUDFRONT_DOMAIN,
+      },
     },
     cache: {
       documentationTtl: 24 * 60 * 60 * 1000, // 24 hours

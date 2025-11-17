@@ -40,6 +40,10 @@ export interface ChartGenerationResult {
   imageUrl?: string;
   imageData?: string;
   localPath?: string;
+  s3Url?: string;
+  s3Key?: string;
+  s3UploadedAt?: string;
+  s3Error?: string;
   metadata: ChartMetadata;
   apiResponse: {
     statusCode: number;

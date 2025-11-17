@@ -16,6 +16,8 @@ export const DRAWINGS_REPOSITORY = Symbol('DRAWINGS_REPOSITORY');
 // Storage Module Services
 export const CHART_STORAGE_SERVICE = Symbol('CHART_STORAGE_SERVICE');
 export const DOWNLOAD_SERVICE = Symbol('DOWNLOAD_SERVICE');
+export const S3_CLIENT_SERVICE = Symbol('S3_CLIENT_SERVICE');
+export const S3_STORAGE_SERVICE = Symbol('S3_STORAGE_SERVICE');
 
 // Core Services
 export const CHART_IMG_CLIENT = Symbol('CHART_IMG_CLIENT');

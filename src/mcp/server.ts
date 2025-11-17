@@ -57,6 +57,11 @@ import {
   saveChartImageToolDefinition,
   SaveChartImageInputSchema,
 } from './tools/save-chart-image.js';
+import {
+  uploadToS3Tool,
+  uploadToS3ToolDefinition,
+  UploadToS3InputSchema,
+} from './tools/upload-to-s3.js';
 
 /**
  * Main server class
@@ -172,6 +177,14 @@ class ChartImgMCPServer {
             };
           }
 
+          case 'upload_chart_to_s3': {
+            const validated = UploadToS3InputSchema.parse(args);
+            const result = await uploadToS3Tool(validated);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+            };
+          }
+
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -251,6 +264,12 @@ class ChartImgMCPServer {
         description: saveChartImageToolDefinition.description,
         inputSchema: saveChartImageToolDefinition.inputSchema,
         annotations: saveChartImageToolDefinition.annotations,
+      },
+      {
+        name: uploadToS3ToolDefinition.name,
+        description: uploadToS3ToolDefinition.description,
+        inputSchema: uploadToS3ToolDefinition.inputSchema,
+        annotations: uploadToS3ToolDefinition.annotations,
       },
     ];
   }
