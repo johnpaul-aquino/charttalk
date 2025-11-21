@@ -19,5 +19,12 @@ export const DOWNLOAD_SERVICE = Symbol('DOWNLOAD_SERVICE');
 export const S3_CLIENT_SERVICE = Symbol('S3_CLIENT_SERVICE');
 export const S3_STORAGE_SERVICE = Symbol('S3_STORAGE_SERVICE');
 
+// Analysis Module Services
+export const AI_ANALYSIS_SERVICE = Symbol('AI_ANALYSIS_SERVICE');
+export const SIGNAL_GENERATION_SERVICE = Symbol('SIGNAL_GENERATION_SERVICE');
+
+// Analysis Module Providers
+export const OPENAI_VISION_PROVIDER = Symbol('OPENAI_VISION_PROVIDER');
+
 // Core Services
 export const CHART_IMG_CLIENT = Symbol('CHART_IMG_CLIENT');

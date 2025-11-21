@@ -7,10 +7,12 @@
 // Interfaces
 export * from './interfaces/analysis.interface';
 
-// Services (will be added in Phase 4)
-// export * from './services/ai-analysis.service';
-// export * from './services/signal-generation.service';
+// Providers
+export * from './providers';
 
-// Domain models (will be added in Phase 4)
+// Services
+export * from './services';
+
+// Domain models (will be added in future phases)
 // export * from './domain/analysis-result';
 // export * from './domain/trading-signal';

@@ -11,8 +11,151 @@ This guide shows you how to integrate the MCP Chart-Image Server with **Claude D
 ## Prerequisites
 
 - **chart-img.com API Key** (get from [chart-img.com](https://chart-img.com))
+- **OpenAI API Key** (for AI chart analysis - get from [platform.openai.com](https://platform.openai.com/api-keys))
 - **Node.js 18+** installed
 - Project dependencies installed (`npm install`)
+
+---
+
+## 🤖 AI Chart Analysis (NEW!)
+
+The MCP Chart-Image server now includes **AI-powered chart analysis** using OpenAI's GPT-4 Vision API. Analyze trading charts with natural language and receive comprehensive technical analysis, trading signals, and risk assessments.
+
+### Features
+
+✅ **Technical Analysis** - Trend identification, support/resistance levels, chart patterns
+✅ **Trading Signals** - Entry/stop/target levels with risk/reward ratios
+✅ **Sentiment Analysis** - Market sentiment (bullish/bearish/neutral) with confidence scores
+✅ **Risk Assessment** - Position sizing, risk management recommendations
+✅ **Multi-Model Support** - GPT-4o, GPT-4o-mini, GPT-4-turbo (easily extensible to Claude, Gemini)
+✅ **Custom Prompts** - Override default prompts for specialized analysis
+✅ **Trading Styles** - Day trading, swing trading, scalping contexts
+
+### Quick Start
+
+1. **Add OpenAI API key to `.env`:**
+   ```bash
+   OPENAI_API_KEY=sk-your-key-here
+   ANALYSIS_DEFAULT_MODEL=gpt-4o-mini  # Recommended for cost-effectiveness
+   ```
+
+2. **Use via Claude Desktop/Claude Code:**
+   ```
+   "Analyze this Bitcoin chart and give me trading signals"
+   ```
+
+3. **Use via REST API:**
+   ```bash
+   curl -X POST http://localhost:3010/api/v1/analysis/chart \
+     -H "Content-Type: application/json" \
+     -d '{
+       "imageUrl": "https://r2.chart-img.com/your-chart-url",
+       "symbol": "BINANCE:BTCUSDT",
+       "interval": "4h",
+       "tradingStyle": "swing_trading"
+     }'
+   ```
+
+### Example Output
+
+```json
+{
+  "success": true,
+  "data": {
+    "trend": "bullish",
+    "recommendation": "LONG",
+    "confidence": 0.78,
+    "entryPrice": 94100,
+    "stopLoss": 93500,
+    "takeProfit": 97500,
+    "riskRewardRatio": 5.67,
+    "signals": [
+      "Bullish RSI divergence detected",
+      "Price bouncing off major support",
+      "Volume confirmation on recent candles"
+    ],
+    "keyLevels": {
+      "support": [94000, 92000],
+      "resistance": [97500, 100000]
+    },
+    "analysisText": "Detailed technical analysis...",
+    "tradingSignal": {
+      "type": "LONG",
+      "symbol": "BINANCE:BTCUSDT",
+      "entryPrice": 94100,
+      "stopLoss": 93500,
+      "takeProfit": 97500,
+      "confidence": 0.78,
+      "reasoning": "Strong support confluence at $94K..."
+    }
+  },
+  "metadata": {
+    "model": "gpt-4o-mini",
+    "tokensUsed": 1847,
+    "processingTime": 3241
+  }
+}
+```
+
+### Supported Models
+
+- **gpt-4o-mini** (Recommended) - Fast, cost-effective, excellent for chart analysis
+- **gpt-4o** - Most capable, best for complex multi-chart analysis
+- **gpt-4-turbo** - Good balance of speed and capability
+- **gpt-4-vision-preview** - Legacy support
+
+**Pricing (OpenAI):**
+- gpt-4o-mini: ~$0.003 per chart analysis
+- gpt-4o: ~$0.01 per chart analysis
+
+### Configuration Options
+
+```bash
+# .env file
+OPENAI_API_KEY=sk-your-key-here
+ANALYSIS_DEFAULT_MODEL=gpt-4o-mini
+ANALYSIS_MAX_TOKENS=2000
+ANALYSIS_TEMPERATURE=0.7
+ANALYSIS_TIMEOUT=60000
+ANALYSIS_MAX_RETRIES=3
+```
+
+### MCP Tool: `analyze_chart`
+
+**Available in Claude Desktop and Claude Code**
+
+**Parameters:**
+- `chartUrl` or `chartPath` - Image to analyze (URL or local file path)
+- `symbol` - Trading symbol (e.g., BINANCE:BTCUSDT)
+- `interval` - Timeframe (e.g., 4h, 1D)
+- `tradingStyle` - "day_trading", "swing_trading", or "scalping" (optional)
+- `customPrompt` - Custom analysis instructions (optional)
+- `generateSignal` - Generate actionable trading signal (default: true)
+
+**Example Usage:**
+```
+User: "Analyze this Bitcoin 4H chart: https://r2.chart-img.com/abc123
+       and give me swing trading signals"
+
+Claude: [Uses analyze_chart tool]
+        Based on the chart analysis, I've identified a high-probability
+        LONG setup:
+
+        Entry: $94,100
+        Stop Loss: $93,500 (below key support)
+        Take Profit: $97,500 (resistance zone)
+        Risk/Reward: 5.67:1
+        Confidence: 78%
+
+        The chart shows bullish RSI divergence with price bouncing
+        off the $94K support level...
+```
+
+### REST API Endpoint
+
+**POST /api/v1/analysis/chart**
+
+See [REST API](#rest-api) section below for complete documentation.
 
 ---
 
@@ -63,8 +206,8 @@ src/
 Each module is designed with clear boundaries:
 
 - **Chart Module**: Chart generation, configuration, validation, indicators, drawings
-- **Analysis Module**: AI-powered chart analysis and signal generation (planned)
-- **Storage Module**: File operations, downloads, permanent storage (planned)
+- **Analysis Module**: AI-powered chart analysis and signal generation with LLM vision
+- **Storage Module**: File operations, downloads, permanent storage (S3 integration)
 - **User Module**: Authentication, quotas, billing (planned for SaaS)
 
 ### Migration Status
@@ -73,19 +216,24 @@ Each module is designed with clear boundaries:
 - Module structure created (Chart, Analysis, Storage, User)
 - Chart module repositories (Indicators, Drawings)
 - Chart module services (ChartConfig, ChartValidation, ChartGeneration)
-- Storage module services (ChartStorage, Download)
+- Storage module services (ChartStorage, Download, S3Storage)
+- **Analysis module (NEW!)** - AI-powered chart analysis
+  - OpenAI Vision Provider (GPT-4o, GPT-4o-mini support)
+  - AI Analysis Service (technical, sentiment, signals, risk)
+  - Signal Generation Service (trading signal parsing & validation)
+  - LLM provider abstraction (easy to add Claude, Gemini, etc.)
 - Core infrastructure (database loaders, HTTP client, config)
 - Dependency injection container (all services registered)
-- All 8 MCP tools refactored to use DI and services
-- Comprehensive unit tests (36 tests, 100% passing)
+- MCP tools: 9 tools (8 existing + analyze_chart)
+- Comprehensive unit tests (**109 tests, 100% passing**)
 - Test infrastructure (Vitest + coverage)
-- **REST API layer** (8 endpoints, middleware stack, controllers)
+- **REST API layer** (9 endpoints, middleware stack, controllers)
 - **API documentation** (comprehensive usage guide)
 
 ⚪ **Planned:**
-- Analysis module services (AI-powered chart analysis)
+- Additional LLM providers (Claude, Gemini, local models)
 - User module services (authentication, quotas)
-- Additional test coverage (API integration tests)
+- API integration tests
 - OpenAPI/Swagger specification
 - GitHub Actions CI/CD pipeline
 - Production deployment (Vercel/Railway/AWS)
@@ -354,6 +502,27 @@ Once connected, Claude has access to these 9 tools:
 
 **Note**: Requires AWS credentials in `.env` file
 
+### 9. `analyze_chart` 🤖 **NEW!**
+**Purpose**: Analyze trading charts using AI vision capabilities (GPT-4o)
+
+**Example**:
+> "Analyze this Bitcoin 4H chart and give me trading signals with entry, stop loss, and take profit levels"
+
+**Returns**:
+- Technical analysis (trend, support/resistance, patterns)
+- Trading signals (LONG/SHORT/NEUTRAL with price levels)
+- Market sentiment and confidence score
+- Risk/reward ratio and risk assessment
+- Detailed analysis text
+
+**Features**:
+- Multiple trading styles (day trading, swing trading, scalping)
+- Custom prompts for specialized analysis
+- Automatic signal generation and validation
+- Comprehensive risk management recommendations
+
+**Note**: Requires OpenAI API key in `.env` file
+
 ---
 
 ## Example Prompts
@@ -403,6 +572,32 @@ Once connected, Claude has access to these 9 tools:
 
 **Event Marking**:
 > "Ethereum chart with vertical event marker and Bollinger Bands for the past 5 days"
+
+### AI Chart Analysis 🤖 **NEW!**
+
+**Basic Analysis**:
+> "Analyze this Bitcoin 4H chart and tell me if it's bullish or bearish"
+
+**Trading Signals**:
+> "Analyze this chart and give me a complete trading setup with entry, stop loss, and take profit levels"
+
+**Multi-Timeframe Analysis**:
+> "Generate a Bitcoin daily chart, analyze it, then give me swing trading signals"
+
+**Complete Workflow** (Generate + Analyze):
+> "Create a Bitcoin 4H chart with RSI and MACD for the last 7 days, then analyze it and give me trading signals"
+
+**Risk Assessment**:
+> "Analyze this Ethereum chart and tell me the risk level, what position size I should use, and where to place my stop loss"
+
+**Sentiment Analysis**:
+> "What's the market sentiment on this chart? Is it bullish, bearish, or neutral? How confident are you?"
+
+**Day Trading Setup**:
+> "Analyze this 15-minute chart for day trading. I need precise entry and exit levels with tight stop loss"
+
+**Custom Analysis**:
+> "Analyze this chart focusing only on volume patterns and price action. Ignore the indicators."
 
 ### Discovery Prompts
 

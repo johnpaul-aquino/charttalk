@@ -19,6 +19,7 @@
     "@aws-sdk/lib-storage": "^3.932.0",
     "@aws-sdk/s3-request-presigner": "^3.932.0",
     "@modelcontextprotocol/sdk": "^1.0.4",
+    "axios": "^1.13.2",
     "cheerio": "^1.0.0",
     "dotenv": "16.4.5",
     "next": "14.2.18",

@@ -20,6 +20,14 @@ export interface AppConfig {
     requestsPerSecond: number;
     dailyLimit: number;
   };
+  openai?: {
+    apiKey?: string;
+    defaultModel?: string;
+    maxTokens?: number;
+    temperature?: number;
+    timeout?: number;
+    maxRetries?: number;
+  };
   aws: {
     accessKeyId?: string;
     secretAccessKey?: string;
@@ -68,6 +76,16 @@ export function loadConfig(): AppConfig {
       requestsPerSecond: parseInt(process.env.CHART_IMG_RPS || String(planLimits.rps)),
       dailyLimit: parseInt(process.env.CHART_IMG_DAILY_LIMIT || String(planLimits.daily)),
     },
+    openai: process.env.OPENAI_API_KEY
+      ? {
+          apiKey: process.env.OPENAI_API_KEY,
+          defaultModel: process.env.ANALYSIS_DEFAULT_MODEL || 'gpt-4o-mini',
+          maxTokens: parseInt(process.env.ANALYSIS_MAX_TOKENS || '2000'),
+          temperature: parseFloat(process.env.ANALYSIS_TEMPERATURE || '0.7'),
+          timeout: parseInt(process.env.ANALYSIS_TIMEOUT || '60000'),
+          maxRetries: parseInt(process.env.ANALYSIS_MAX_RETRIES || '3'),
+        }
+      : undefined,
     aws: {
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -140,3 +158,8 @@ export function getConfig(): AppConfig {
   }
   return configInstance;
 }
+
+/**
+ * Alias for getConfig() - for consistency across the codebase
+ */
+export const getAppConfig = getConfig;

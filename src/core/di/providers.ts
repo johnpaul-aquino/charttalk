@@ -20,8 +20,15 @@ import { DownloadService } from '../../modules/storage/services/download.service
 import { S3ClientService } from '../../modules/storage/services/s3-client.service';
 import { S3StorageService } from '../../modules/storage/services/s3-storage.service';
 
+// Analysis Module
+import { AIAnalysisService } from '../../modules/analysis/services/ai-analysis.service';
+import { SignalGenerationService } from '../../modules/analysis/services/signal-generation.service';
+import { OpenAIVisionProvider } from '../../modules/analysis/providers/openai-vision.provider';
+import { ILLMProvider } from '../../modules/analysis/providers/llm-provider.interface';
+
 // Core
 import { createChartImgClient } from '../../mcp/utils/chart-img-client';
+import { getAppConfig } from '../../shared/config/environment.config';
 
 /**
  * Register all services with the DI container
@@ -94,5 +101,46 @@ export function registerProviders(container: DIContainer): void {
   container.registerSingleton(tokens.S3_STORAGE_SERVICE, (c) => {
     const s3Client = c.resolve<S3ClientService>(tokens.S3_CLIENT_SERVICE);
     return new S3StorageService(s3Client);
+  });
+
+  // ============================================================
+  // Analysis Module - Providers (singletons)
+  // ============================================================
+
+  // OpenAI Vision Provider (no dependencies, reads from env config)
+  container.registerSingleton(tokens.OPENAI_VISION_PROVIDER, () => {
+    const config = getAppConfig();
+
+    // Check if OpenAI API key is configured
+    if (!config.openai?.apiKey) {
+      throw new Error(
+        'OPENAI_API_KEY not configured. Please set it in .env file.'
+      );
+    }
+
+    return new OpenAIVisionProvider({
+      apiKey: config.openai.apiKey,
+      defaultModel: config.openai.defaultModel || 'gpt-4o-mini',
+      timeout: config.openai.timeout || 60000,
+      maxRetries: config.openai.maxRetries || 3,
+    });
+  });
+
+  // ============================================================
+  // Analysis Module - Services (singletons)
+  // ============================================================
+
+  // SignalGenerationService (no dependencies)
+  container.registerSingleton(tokens.SIGNAL_GENERATION_SERVICE, () => {
+    return new SignalGenerationService();
+  });
+
+  // AIAnalysisService (depends on LLM provider and signal generation service)
+  container.registerSingleton(tokens.AI_ANALYSIS_SERVICE, (c) => {
+    const llmProvider = c.resolve<ILLMProvider>(tokens.OPENAI_VISION_PROVIDER);
+    const signalGenerator = c.resolve<SignalGenerationService>(
+      tokens.SIGNAL_GENERATION_SERVICE
+    );
+    return new AIAnalysisService(llmProvider, signalGenerator);
   });
 }
