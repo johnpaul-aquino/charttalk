@@ -34,8 +34,8 @@ export function loadIndicatorsDatabase(): IndicatorsDatabase {
   }
 
   try {
-    // Get project root directory
-    const projectRoot = path.resolve(__dirname, '../..');
+    // Get project root directory - use process.cwd() for Next.js compatibility
+    const projectRoot = process.cwd();
     const dbPath = path.join(projectRoot, 'src/data/indicators.json');
     const rawData = fs.readFileSync(dbPath, 'utf-8');
     cachedDatabase = JSON.parse(rawData) as IndicatorsDatabase;
@@ -43,7 +43,7 @@ export function loadIndicatorsDatabase(): IndicatorsDatabase {
   } catch (error) {
     loadError = error as Error;
     throw new Error(
-      `Failed to load indicators database at: ${path.resolve(__dirname, '../..')}/src/data/indicators.json - ${(error as Error).message}`
+      `Failed to load indicators database at: ${process.cwd()}/src/data/indicators.json - ${(error as Error).message}`
     );
   }
 }

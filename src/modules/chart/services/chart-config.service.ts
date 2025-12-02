@@ -218,6 +218,7 @@ export class ChartConfigService implements IChartConfigService {
 
   /**
    * Detect time range from natural language
+   * Valid ranges: 1D, 5D, 1M, 3M, 6M, YTD, 1Y, 5Y, ALL
    */
   detectTimeRange(text: string): string {
     const nl = text.toLowerCase();
@@ -226,17 +227,22 @@ export class ChartConfigService implements IChartConfigService {
     if (nl.match(/last\s+(\d+)\s+day/i) || nl.match(/past\s+(\d+)\s+day/i)) {
       const days = parseInt(nl.match(/(\d+)\s+day/i)?.[1] || '7');
       if (days <= 1) return '1D';
-      if (days <= 7) return '1M';
+      if (days <= 5) return '5D';
       if (days <= 30) return '1M';
       if (days <= 90) return '3M';
+      if (days <= 180) return '6M';
       return '1Y';
     }
 
     if (nl.includes('24 hours') || nl.includes('1 day') || nl.includes('today')) return '1D';
-    if (nl.includes('week') || nl.includes('7 days')) return '1M';
+    if (nl.includes('5 days')) return '5D';
+    if (nl.includes('week') || nl.includes('7 days')) return '1M'; // No 1W range, use 1M
     if (nl.includes('month') || nl.includes('30 days')) return '1M';
     if (nl.includes('quarter') || nl.includes('3 months')) return '3M';
+    if (nl.includes('6 months') || nl.includes('half year')) return '6M';
     if (nl.includes('year') || nl.includes('12 months')) return '1Y';
+    if (nl.includes('5 year')) return '5Y';
+    if (nl.includes('all time') || nl.includes('all data')) return 'ALL';
 
     // Default
     return '1M';
@@ -312,12 +318,14 @@ export class ChartConfigService implements IChartConfigService {
 
   /**
    * Detect indicators from natural language
+   * Uses chart-img.com API format: full indicator names (not TradingView shorthand)
    */
   detectIndicators(text: string, availableIndicators: any[]): ChartStudy[] {
     const nl = text.toLowerCase();
     const studies: ChartStudy[] = [];
 
-    // Common indicator keywords
+    // Common indicator keywords mapped to chart-img.com API indicator names
+    // The name must match exactly what chart-img.com expects (full name, not shorthand)
     const indicatorKeywords: Record<string, string> = {
       'bollinger bands': 'Bollinger Bands',
       'bollinger': 'Bollinger Bands',
@@ -327,7 +335,7 @@ export class ChartConfigService implements IChartConfigService {
       'macd': 'MACD',
       'moving average convergence': 'MACD',
       'moving average': 'Moving Average',
-      'ma': 'Moving Average',
+      'ma ': 'Moving Average', // Space to avoid matching "macd"
       'ema': 'Moving Average Exponential',
       'exponential moving average': 'Moving Average Exponential',
       'sma': 'Moving Average',
@@ -339,24 +347,21 @@ export class ChartConfigService implements IChartConfigService {
       'average true range': 'Average True Range',
       'adx': 'Average Directional Index',
       'ichimoku': 'Ichimoku Cloud',
-      'fibonacci': 'Fibonacci Retracement',
+      'vwap': 'VWAP',
       'pivot': 'Pivot Points Standard',
     };
 
-    // Find indicators
-    for (const [keyword, indicatorName] of Object.entries(indicatorKeywords)) {
-      if (nl.includes(keyword)) {
-        const indicator = availableIndicators.find(
-          (ind) => ind.name === indicatorName
-        );
+    // Find indicators directly from keywords
+    const addedStudies = new Set<string>();
 
-        if (indicator) {
-          const defaultInputs = this.extractDefaultInputs(indicator);
-          studies.push({
-            name: indicatorName,
-            input: Object.keys(defaultInputs).length > 0 ? defaultInputs : undefined,
-          });
-        }
+    for (const [keyword, indicatorName] of Object.entries(indicatorKeywords)) {
+      if (nl.includes(keyword) && !addedStudies.has(indicatorName)) {
+        studies.push({
+          name: indicatorName,
+          input: undefined, // Use default inputs
+        });
+        addedStudies.add(indicatorName);
+        console.log(`[ChartConfigService] Detected indicator: ${keyword} -> ${indicatorName}`);
       }
     }
 

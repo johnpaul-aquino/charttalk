@@ -1,0 +1,654 @@
+/**
+ * Conversation Service
+ *
+ * Main orchestration service for AI-powered conversations with Claude.
+ * Handles message processing, tool execution, and response generation.
+ */
+
+import { v4 as uuidv4 } from 'uuid';
+import {
+  ClaudeProvider,
+  ClaudeMessage,
+  ClaudeContentBlock,
+  ClaudeTextBlock,
+  ClaudeToolUseBlock,
+  ClaudeTool,
+} from '../../analysis/providers/claude.provider';
+import {
+  IConversationService,
+  IConversationRepository,
+  SendMessageRequest,
+  SendMessageResponse,
+  StreamEvent,
+  ChatMessage,
+  ToolCallRecord,
+  Conversation,
+} from '../interfaces/conversation.interface';
+import { ContextManagerService } from './context-manager.service';
+import { createAssistantMessage, createToolCallRecord, completeToolCall, failToolCall } from '../domain/message';
+
+// Import service interfaces for tool execution
+import type { IChartConfigService } from '../../chart/interfaces/chart.interface';
+import type { IChartGenerationService } from '../../chart/interfaces/chart.interface';
+import type { IAIAnalysisService } from '../../analysis/interfaces/analysis.interface';
+
+/**
+ * Conversation Service Configuration
+ */
+export interface ConversationServiceConfig {
+  claudeProvider: ClaudeProvider;
+  contextManager: ContextManagerService;
+  chartConfigService: IChartConfigService;
+  chartGenerationService: IChartGenerationService;
+  analysisService?: IAIAnalysisService;
+  conversationRepository?: IConversationRepository;
+}
+
+/**
+ * Conversation Service Implementation
+ */
+export class ConversationService implements IConversationService {
+  private claudeProvider: ClaudeProvider;
+  private contextManager: ContextManagerService;
+  private chartConfigService: IChartConfigService;
+  private chartGenerationService: IChartGenerationService;
+  private analysisService?: IAIAnalysisService;
+  private conversationRepository?: IConversationRepository;
+
+  constructor(config: ConversationServiceConfig) {
+    this.claudeProvider = config.claudeProvider;
+    this.contextManager = config.contextManager;
+    this.chartConfigService = config.chartConfigService;
+    this.chartGenerationService = config.chartGenerationService;
+    this.analysisService = config.analysisService;
+    this.conversationRepository = config.conversationRepository;
+  }
+
+  /**
+   * Get or create a conversation for a user
+   */
+  async getOrCreateConversation(
+    userId: string,
+    conversationId?: string
+  ): Promise<Conversation | null> {
+    if (!this.conversationRepository) {
+      return null;
+    }
+
+    if (conversationId) {
+      const existing = await this.conversationRepository.getConversationWithMessages(conversationId);
+      if (existing && existing.userId === userId) {
+        return existing;
+      }
+    }
+
+    // Create new conversation
+    return this.conversationRepository.createConversation({ userId });
+  }
+
+  /**
+   * Persist a user message to the database
+   */
+  private async persistUserMessage(
+    conversationId: string,
+    content: string
+  ): Promise<void> {
+    if (!this.conversationRepository) return;
+
+    await this.conversationRepository.addMessage({
+      conversationId,
+      role: 'user',
+      content,
+    });
+  }
+
+  /**
+   * Persist an assistant message to the database
+   */
+  private async persistAssistantMessage(
+    conversationId: string,
+    content: string,
+    chartData?: SendMessageResponse['chart'],
+    tokensUsed?: number
+  ): Promise<void> {
+    if (!this.conversationRepository) return;
+
+    await this.conversationRepository.addMessage({
+      conversationId,
+      role: 'assistant',
+      content,
+      chartUrl: chartData?.imageUrl,
+      chartSymbol: chartData?.symbol,
+      chartInterval: chartData?.interval,
+      tokensUsed,
+    });
+  }
+
+  /**
+   * Send a message and get AI response
+   */
+  async sendMessage(request: SendMessageRequest): Promise<SendMessageResponse> {
+    try {
+      // Get or create conversation if persistence is enabled
+      let conversationId = request.conversationId;
+      if (this.conversationRepository && request.userId) {
+        const conversation = await this.getOrCreateConversation(request.userId, conversationId);
+        if (conversation) {
+          conversationId = conversation.id;
+          // If we have a conversation with messages, use them as history
+          if (!request.conversationHistory && conversation.messages.length > 0) {
+            request = { ...request, conversationHistory: conversation.messages };
+          }
+        }
+      }
+      conversationId = conversationId || uuidv4();
+
+      // Persist user message
+      await this.persistUserMessage(conversationId, request.message);
+
+      // Build conversation history
+      const history = request.conversationHistory || [];
+      const claudeMessages = this.contextManager.buildConversationHistory(history);
+
+      // Add the new user message
+      claudeMessages.push({
+        role: 'user',
+        content: request.message,
+      });
+
+      // Truncate if needed
+      const truncatedHistory = this.contextManager.truncateHistory(claudeMessages);
+
+      // Get available tools
+      const tools = this.getAvailableTools();
+
+      // Send to Claude
+      const response = await this.claudeProvider.sendMessage(
+        truncatedHistory,
+        {
+          systemPrompt: this.contextManager.getSystemPrompt(),
+        },
+        tools
+      );
+
+      // Process response
+      const result = await this.processClaudeResponse(
+        response,
+        conversationId,
+        truncatedHistory
+      );
+
+      // Persist assistant message
+      await this.persistAssistantMessage(
+        conversationId,
+        result.message.content,
+        result.chart
+      );
+
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return {
+        success: false,
+        message: createAssistantMessage(`I encountered an error: ${errorMessage}`),
+        conversationId: request.conversationId || uuidv4(),
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Send a message with streaming response
+   */
+  async sendMessageStreaming(
+    request: SendMessageRequest,
+    onEvent: (event: StreamEvent) => void
+  ): Promise<SendMessageResponse> {
+    // Get or create conversation if persistence is enabled
+    let conversationId = request.conversationId;
+    if (this.conversationRepository && request.userId) {
+      const conversation = await this.getOrCreateConversation(request.userId, conversationId);
+      if (conversation) {
+        conversationId = conversation.id;
+        // If we have a conversation with messages, use them as history
+        if (!request.conversationHistory && conversation.messages.length > 0) {
+          request = { ...request, conversationHistory: conversation.messages };
+        }
+      }
+    }
+    conversationId = conversationId || uuidv4();
+
+    try {
+      // Persist user message
+      await this.persistUserMessage(conversationId, request.message);
+
+      // Emit start event
+      onEvent({ event: 'start', data: { messageId: uuidv4() } });
+
+      // Build conversation history
+      const history = request.conversationHistory || [];
+      const claudeMessages = this.contextManager.buildConversationHistory(history);
+
+      // Add the new user message
+      claudeMessages.push({
+        role: 'user',
+        content: request.message,
+      });
+
+      // Truncate if needed
+      const truncatedHistory = this.contextManager.truncateHistory(claudeMessages);
+
+      // Get available tools
+      const tools = this.getAvailableTools();
+
+      let fullText = '';
+      const toolCalls: ToolCallRecord[] = [];
+      let chartData: SendMessageResponse['chart'] = undefined;
+      let analysisData: SendMessageResponse['analysis'] = undefined;
+
+      // Send to Claude with streaming
+      const response = await this.claudeProvider.sendMessage(
+        truncatedHistory,
+        {
+          systemPrompt: this.contextManager.getSystemPrompt(),
+        },
+        tools,
+        // Stream callback for text chunks
+        (chunk: string) => {
+          fullText += chunk;
+          onEvent({ event: 'chunk', data: { text: chunk } });
+        },
+        // Tool use callback
+        (toolUse: ClaudeToolUseBlock) => {
+          onEvent({
+            event: 'tool_use',
+            data: { tool: toolUse.name, input: toolUse.input },
+          });
+        }
+      );
+
+      // Process any tool calls in the response
+      for (const block of response) {
+        if (block.type === 'tool_use') {
+          const toolResult = await this.executeToolCallWithEvents(
+            block as ClaudeToolUseBlock,
+            onEvent,
+            toolCalls
+          );
+
+          // Extract chart/analysis data if applicable
+          if (block.name === 'generate_chart' && toolResult) {
+            chartData = toolResult as SendMessageResponse['chart'];
+            onEvent({
+              event: 'chart_complete',
+              data: chartData,
+            });
+          }
+
+          if (block.name === 'analyze_chart' && toolResult) {
+            analysisData = toolResult as SendMessageResponse['analysis'];
+            onEvent({
+              event: 'analysis_complete',
+              data: analysisData,
+            });
+          }
+        }
+      }
+
+      // If there were tool calls, continue the conversation with results
+      if (toolCalls.length > 0) {
+        const toolResults = toolCalls.map((tc) => ({
+          type: 'tool_result' as const,
+          tool_use_id: tc.id,
+          content: JSON.stringify(tc.output),
+        }));
+
+        // Get final response after tool use
+        // Pass the original response (with tool_use blocks) to maintain proper message sequence
+        const finalResponse = await this.claudeProvider.continueWithToolResult(
+          truncatedHistory,
+          response, // The assistant's tool_use response
+          toolResults,
+          { systemPrompt: this.contextManager.getSystemPrompt() },
+          tools,
+          (chunk: string) => {
+            fullText += chunk;
+            onEvent({ event: 'chunk', data: { text: chunk } });
+          }
+        );
+
+        // Extract final text
+        for (const block of finalResponse) {
+          if (block.type === 'text') {
+            fullText = (block as ClaudeTextBlock).text;
+          }
+        }
+      }
+
+      const message = createAssistantMessage(fullText, {
+        chartId: chartData ? uuidv4() : undefined,
+        analysisId: analysisData ? uuidv4() : undefined,
+        toolCalls,
+      });
+
+      const result: SendMessageResponse = {
+        success: true,
+        message,
+        conversationId,
+        chart: chartData,
+        analysis: analysisData,
+      };
+
+      // Persist assistant message
+      await this.persistAssistantMessage(
+        conversationId,
+        fullText,
+        chartData
+      );
+
+      // Emit complete event
+      onEvent({ event: 'complete', data: result });
+
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      onEvent({
+        event: 'error',
+        data: { code: 'CONVERSATION_ERROR', message: errorMessage },
+      });
+
+      return {
+        success: false,
+        message: createAssistantMessage(`I encountered an error: ${errorMessage}`),
+        conversationId,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Get available tools for Claude
+   */
+  getAvailableTools(): ClaudeTool[] {
+    return [
+      {
+        name: 'generate_chart',
+        description: `Generate a TradingView chart with technical indicators.
+
+Use this tool when the user asks for a chart, mentions a trading symbol, or wants to visualize market data.
+
+Parameters:
+- symbol: Trading symbol (e.g., "BINANCE:BTCUSDT", "NASDAQ:AAPL", "FX:EURUSD")
+- interval: Time interval for candles
+- range: Time range to display (IMPORTANT: "7 days" = "1M", there is no "1W" range)
+- indicators: Array of indicator names (e.g., ["RSI", "MACD", "Bollinger Bands"])
+- theme: "light" or "dark"
+
+Returns: Chart image URL and metadata`,
+        input_schema: {
+          type: 'object',
+          properties: {
+            symbol: {
+              type: 'string',
+              description: 'Trading symbol (e.g., BINANCE:BTCUSDT, NASDAQ:AAPL)',
+            },
+            interval: {
+              type: 'string',
+              enum: ['1m', '5m', '15m', '30m', '1h', '2h', '4h', '1D', '1W'],
+              description: 'Time interval for candles',
+            },
+            range: {
+              type: 'string',
+              enum: ['1D', '5D', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'ALL'],
+              description: 'Time range. Use 1M for "last week" or "7 days"',
+            },
+            indicators: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Technical indicators to add (e.g., RSI, MACD)',
+            },
+            theme: {
+              type: 'string',
+              enum: ['light', 'dark'],
+              description: 'Chart theme',
+            },
+          },
+          required: ['symbol'],
+        },
+      },
+      {
+        name: 'analyze_chart',
+        description: `Perform AI analysis on a chart to identify trends, patterns, and trading signals.
+
+Use this tool when the user asks for analysis, trading signals, or wants to know what a chart shows.
+
+Parameters:
+- chartId: ID of the chart to analyze (from generate_chart)
+- tradingStyle: "day_trading", "swing_trading", or "scalping"
+
+Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
+        input_schema: {
+          type: 'object',
+          properties: {
+            chartId: {
+              type: 'string',
+              description: 'ID of the chart to analyze',
+            },
+            tradingStyle: {
+              type: 'string',
+              enum: ['day_trading', 'swing_trading', 'scalping'],
+              description: 'Trading style for analysis context',
+            },
+          },
+          required: ['chartId'],
+        },
+      },
+    ];
+  }
+
+  /**
+   * Execute a tool call from Claude
+   */
+  async executeToolCall(
+    toolName: string,
+    input: Record<string, unknown>
+  ): Promise<unknown> {
+    switch (toolName) {
+      case 'generate_chart':
+        return this.executeGenerateChart(input);
+
+      case 'analyze_chart':
+        return this.executeAnalyzeChart(input);
+
+      default:
+        throw new Error(`Unknown tool: ${toolName}`);
+    }
+  }
+
+  /**
+   * Execute tool call and emit events
+   */
+  private async executeToolCallWithEvents(
+    toolUse: ClaudeToolUseBlock,
+    onEvent: (event: StreamEvent) => void,
+    toolCalls: ToolCallRecord[]
+  ): Promise<unknown> {
+    const toolCall = createToolCallRecord(toolUse.id, toolUse.name, toolUse.input);
+    toolCalls.push(toolCall);
+
+    try {
+      const result = await this.executeToolCall(toolUse.name, toolUse.input);
+      Object.assign(toolCall, completeToolCall(toolCall, result));
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Tool execution failed';
+      Object.assign(toolCall, failToolCall(toolCall, errorMessage));
+      throw error;
+    }
+  }
+
+  /**
+   * Execute generate_chart tool
+   */
+  private async executeGenerateChart(
+    input: Record<string, unknown>
+  ): Promise<SendMessageResponse['chart']> {
+    try {
+      // Parse input
+      const symbol = input.symbol as string;
+      const interval = (input.interval as string) || '4h';
+      const range = (input.range as string) || '1M';
+      const indicators = (input.indicators as string[]) || [];
+      const theme = (input.theme as string) || 'dark';
+
+      console.log('[ConversationService] Generating chart:', { symbol, interval, range, indicators, theme });
+
+      // Build chart config
+      const config = await this.chartConfigService.constructFromNaturalLanguage(
+        `${symbol} chart with ${indicators.join(', ')} for the last ${range}`,
+        { theme: theme as 'light' | 'dark', interval, range }
+      );
+
+      console.log('[ConversationService] Chart config:', JSON.stringify(config.config, null, 2));
+
+      // Generate chart
+      const result = await this.chartGenerationService.generateChart(
+        config.config,
+        true, // storage
+        'png' // format
+      );
+
+      console.log('[ConversationService] Chart generation result:', { success: result.success, error: result.error, imageUrl: result.imageUrl });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Chart generation failed');
+      }
+
+      return {
+        imageUrl: result.imageUrl || '',
+        symbol,
+        interval,
+        s3Url: result.s3Url,
+      };
+    } catch (error) {
+      console.error('[ConversationService] Chart generation error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Execute analyze_chart tool
+   */
+  private async executeAnalyzeChart(
+    input: Record<string, unknown>
+  ): Promise<SendMessageResponse['analysis']> {
+    if (!this.analysisService) {
+      throw new Error('Analysis service not configured');
+    }
+
+    const chartId = input.chartId as string;
+    const tradingStyle = (input.tradingStyle as string) || 'swing_trading';
+
+    // For now, return a placeholder - actual implementation would fetch the chart
+    // and run AI analysis using the analysis service
+    const result = await this.analysisService.analyzeChart({
+      chartUrl: chartId, // In real impl, this would be the chart URL
+      symbol: 'UNKNOWN',
+      interval: '4h',
+      options: {
+        tradingStyle: tradingStyle as 'day_trading' | 'swing_trading' | 'scalping',
+      },
+    });
+
+    if (!result.success || !result.analysis) {
+      throw new Error(result.error || 'Analysis failed');
+    }
+
+    return {
+      trend: result.analysis.trend,
+      recommendation: result.analysis.recommendation,
+      confidence: result.analysis.confidence,
+      signals: result.analysis.signals,
+    };
+  }
+
+  /**
+   * Process Claude response
+   */
+  private async processClaudeResponse(
+    response: ClaudeContentBlock[],
+    conversationId: string,
+    history: ClaudeMessage[]
+  ): Promise<SendMessageResponse> {
+    const toolCalls: ToolCallRecord[] = [];
+    let chartData: SendMessageResponse['chart'] = undefined;
+    let analysisData: SendMessageResponse['analysis'] = undefined;
+    let responseText = '';
+
+    // Process each content block
+    for (const block of response) {
+      if (block.type === 'text') {
+        responseText = (block as ClaudeTextBlock).text;
+      }
+
+      if (block.type === 'tool_use') {
+        const toolUse = block as ClaudeToolUseBlock;
+        const toolCall = createToolCallRecord(toolUse.id, toolUse.name, toolUse.input);
+        toolCalls.push(toolCall);
+
+        try {
+          const result = await this.executeToolCall(toolUse.name, toolUse.input);
+          Object.assign(toolCall, completeToolCall(toolCall, result));
+
+          if (toolUse.name === 'generate_chart') {
+            chartData = result as SendMessageResponse['chart'];
+          }
+          if (toolUse.name === 'analyze_chart') {
+            analysisData = result as SendMessageResponse['analysis'];
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Tool failed';
+          Object.assign(toolCall, failToolCall(toolCall, errorMessage));
+        }
+      }
+    }
+
+    // If there were tool calls, continue the conversation
+    if (toolCalls.length > 0) {
+      const toolResults = toolCalls.map((tc) => ({
+        type: 'tool_result' as const,
+        tool_use_id: tc.id,
+        content: JSON.stringify(tc.output || tc.error),
+      }));
+
+      // Pass the original assistant response (with tool_use blocks) to maintain proper message sequence
+      const finalResponse = await this.claudeProvider.continueWithToolResult(
+        history,
+        response, // The assistant's tool_use response
+        toolResults,
+        { systemPrompt: this.contextManager.getSystemPrompt() }
+      );
+
+      // Extract final text
+      for (const block of finalResponse) {
+        if (block.type === 'text') {
+          responseText = (block as ClaudeTextBlock).text;
+        }
+      }
+    }
+
+    const message = createAssistantMessage(responseText, {
+      chartId: chartData ? uuidv4() : undefined,
+      analysisId: analysisData ? uuidv4() : undefined,
+      toolCalls,
+    });
+
+    return {
+      success: true,
+      message,
+      conversationId,
+      chart: chartData,
+      analysis: analysisData,
+    };
+  }
+}

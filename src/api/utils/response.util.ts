@@ -128,3 +128,31 @@ export function jsonResponse<T>(
 ): NextResponse {
   return NextResponse.json(data, { status });
 }
+
+/**
+ * Create a paginated success response
+ */
+export function createPaginatedResponse<T>(
+  items: T[],
+  total: number,
+  page: number,
+  limit: number,
+  meta?: Record<string, any>
+): ApiSuccessResponse<T[]> {
+  const totalPages = Math.ceil(total / limit);
+  return {
+    success: true,
+    data: items,
+    meta: {
+      timestamp: new Date().toISOString(),
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasMore: page < totalPages,
+      },
+      ...meta,
+    },
+  };
+}

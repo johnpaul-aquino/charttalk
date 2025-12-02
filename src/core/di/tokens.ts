@@ -25,6 +25,19 @@ export const SIGNAL_GENERATION_SERVICE = Symbol('SIGNAL_GENERATION_SERVICE');
 
 // Analysis Module Providers
 export const OPENAI_VISION_PROVIDER = Symbol('OPENAI_VISION_PROVIDER');
+export const CLAUDE_PROVIDER = Symbol('CLAUDE_PROVIDER');
+
+// Conversation Module Services
+export const CONVERSATION_SERVICE = Symbol('CONVERSATION_SERVICE');
+export const CONTEXT_MANAGER_SERVICE = Symbol('CONTEXT_MANAGER_SERVICE');
+export const CHAT_CONTROLLER = Symbol('CHAT_CONTROLLER');
+export const CONVERSATION_REPOSITORY = Symbol('CONVERSATION_REPOSITORY');
+
+// User Module Services
+export const JWT_SERVICE = Symbol('JWT_SERVICE');
+
+// Database
+export const PRISMA_CLIENT = Symbol('PRISMA_CLIENT');
 
 // Core Services
 export const CHART_IMG_CLIENT = Symbol('CHART_IMG_CLIENT');

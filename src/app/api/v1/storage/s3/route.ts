@@ -8,7 +8,8 @@ import { NextRequest } from 'next/server';
 import {
   withErrorHandler,
   withCors,
-  withOptionalAuth,
+  withAuth,
+  withPlan,
   withRateLimit,
   pipe,
 } from '../../../../../api/middleware';
@@ -50,10 +51,15 @@ async function handler(req: NextRequest) {
   return jsonResponse(createSuccessResponse(result.data), HttpStatus.OK);
 }
 
-// Apply middleware: CORS → Rate Limit → Optional Auth → Error Handler
+// Apply middleware: CORS → Rate Limit → Auth → Plan Check → Error Handler
+// Requires pro or max plan with active subscription
 export const POST = pipe(
   withCors,
   withRateLimit({ capacity: 10, refillRate: 5 }), // 10 burst, 5/sec refill
-  withOptionalAuth,
+  withAuth,
+  withPlan(['pro', 'max']),
   withErrorHandler
 )(handler);
+
+// Handle CORS preflight requests
+export { OPTIONS } from '../../../../../api/middleware/cors.middleware';

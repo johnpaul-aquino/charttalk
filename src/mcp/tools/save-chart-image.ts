@@ -133,8 +133,8 @@ const saved = await save_chart_image({
         description: 'Optional directory path (default: /tmp)',
       },
     },
-    required: ['imageData'] as const,
-  } as const,
+    required: ['imageData'],
+  },
   annotations: {
     title: 'Save Chart Image',
     readOnlyHint: false,

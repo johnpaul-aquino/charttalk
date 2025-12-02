@@ -25,8 +25,8 @@ export function loadDrawingsDatabase(): DrawingsDatabase {
   }
 
   try {
-    // Resolve path relative to project root
-    const projectRoot = path.resolve(__dirname, '../..');
+    // Resolve path relative to project root - use process.cwd() for Next.js compatibility
+    const projectRoot = process.cwd();
     const dbPath = path.join(projectRoot, 'src/data/drawings.json');
 
     if (!fs.existsSync(dbPath)) {

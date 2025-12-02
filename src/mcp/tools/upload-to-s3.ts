@@ -107,39 +107,39 @@ export const uploadToS3ToolDefinition = {
 - Or CloudFront CDN URL if configured
 - Bucket, key, size, upload timestamp`,
   inputSchema: {
-    type: 'object',
+    type: 'object' as const,
     properties: {
       imageUrl: {
-        type: 'string',
+        type: 'string' as const,
         description: 'Chart image URL from chart-img.com (must be a valid HTTP(S) URL). Either imageUrl or imageData must be provided.',
       },
       imageData: {
-        type: 'string',
+        type: 'string' as const,
         description: 'Base64-encoded image data (alternative to imageUrl). Either imageUrl or imageData must be provided.',
       },
       metadata: {
-        type: 'object',
+        type: 'object' as const,
         description: 'Trading chart metadata for organization',
         properties: {
           symbol: {
-            type: 'string',
+            type: 'string' as const,
             description: 'Trading symbol (e.g., BINANCE:BTCUSDT)',
           },
           interval: {
-            type: 'string',
+            type: 'string' as const,
             description: 'Chart timeframe (e.g., 4h, 1D)',
           },
           indicators: {
-            type: 'array',
-            items: { type: 'string' },
+            type: 'array' as const,
+            items: { type: 'string' as const },
             description: 'List of indicators used (e.g., ["RSI", "MACD"])',
           },
           generatedAt: {
-            type: 'string',
+            type: 'string' as const,
             description: 'ISO timestamp when chart was generated',
           },
           source: {
-            type: 'string',
+            type: 'string' as const,
             description: 'Chart source (default: "chart-img.com")',
           },
         },

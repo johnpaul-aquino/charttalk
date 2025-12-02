@@ -34,15 +34,15 @@ export function loadIndicatorsDatabase(): IndicatorsDatabase {
   }
 
   try {
-    // Get database file path (now in core/database/)
-    const dbPath = path.resolve(__dirname, '../indicators.json');
+    // Get database file path - use process.cwd() for Next.js compatibility
+    const dbPath = path.join(process.cwd(), 'src/core/database/indicators.json');
     const rawData = fs.readFileSync(dbPath, 'utf-8');
     cachedDatabase = JSON.parse(rawData) as IndicatorsDatabase;
     return cachedDatabase;
   } catch (error) {
     loadError = error as Error;
     throw new Error(
-      `Failed to load indicators database at: ${path.resolve(__dirname, '../indicators.json')} - ${(error as Error).message}`
+      `Failed to load indicators database at: ${path.join(process.cwd(), 'src/core/database/indicators.json')} - ${(error as Error).message}`
     );
   }
 }

@@ -24,7 +24,24 @@ import { S3StorageService } from '../../modules/storage/services/s3-storage.serv
 import { AIAnalysisService } from '../../modules/analysis/services/ai-analysis.service';
 import { SignalGenerationService } from '../../modules/analysis/services/signal-generation.service';
 import { OpenAIVisionProvider } from '../../modules/analysis/providers/openai-vision.provider';
+import { ClaudeProvider } from '../../modules/analysis/providers/claude.provider';
 import { ILLMProvider } from '../../modules/analysis/providers/llm-provider.interface';
+
+// Conversation Module
+import { ConversationService } from '../../modules/conversation/services/conversation.service';
+import { ContextManagerService } from '../../modules/conversation/services/context-manager.service';
+import { ConversationRepository } from '../../modules/conversation/repositories/conversation.repository';
+import { IConversationRepository } from '../../modules/conversation/interfaces/conversation.interface';
+
+// User Module
+import { JWTService } from '../../modules/user/services/jwt.service';
+
+// Database
+import { prisma, getPrismaClient } from '../database/prisma.client';
+import type { PrismaClient } from '@prisma/client';
+
+// Controllers
+import { ChatController } from '../../api/controllers/chat.controller';
 
 // Core
 import { createChartImgClient } from '../../mcp/utils/chart-img-client';
@@ -41,6 +58,24 @@ export function registerProviders(container: DIContainer): void {
   // ChartImgClient (singleton)
   container.registerSingleton(tokens.CHART_IMG_CLIENT, () => {
     return createChartImgClient();
+  });
+
+  // ============================================================
+  // Database
+  // ============================================================
+
+  // Prisma Client (singleton)
+  container.registerSingleton(tokens.PRISMA_CLIENT, () => {
+    return getPrismaClient();
+  });
+
+  // ============================================================
+  // User Module - Services (singletons)
+  // ============================================================
+
+  // JWT Service (singleton)
+  container.registerSingleton(tokens.JWT_SERVICE, () => {
+    return new JWTService();
   });
 
   // ============================================================
@@ -142,5 +177,88 @@ export function registerProviders(container: DIContainer): void {
       tokens.SIGNAL_GENERATION_SERVICE
     );
     return new AIAnalysisService(llmProvider, signalGenerator);
+  });
+
+  // ============================================================
+  // Claude Provider (for conversation)
+  // ============================================================
+
+  // Claude Provider (reads from env config)
+  container.registerSingleton(tokens.CLAUDE_PROVIDER, () => {
+    const config = getAppConfig();
+
+    // Check if Anthropic API key is configured
+    if (!config.anthropic?.apiKey) {
+      throw new Error(
+        'ANTHROPIC_API_KEY not configured. Please set it in .env file for chat functionality.'
+      );
+    }
+
+    return new ClaudeProvider({
+      apiKey: config.anthropic.apiKey,
+      defaultModel: config.anthropic.defaultModel || 'claude-opus-4-5-20251101',
+      timeout: config.anthropic.timeout || 60000,
+      maxRetries: config.anthropic.maxRetries || 3,
+    });
+  });
+
+  // ============================================================
+  // Conversation Module - Services (singletons)
+  // ============================================================
+
+  // ContextManagerService (no dependencies)
+  container.registerSingleton(tokens.CONTEXT_MANAGER_SERVICE, () => {
+    return new ContextManagerService();
+  });
+
+  // ConversationRepository (depends on Prisma client)
+  container.registerSingleton(tokens.CONVERSATION_REPOSITORY, (c) => {
+    const prismaClient = c.resolve<PrismaClient>(tokens.PRISMA_CLIENT);
+    return new ConversationRepository(prismaClient);
+  });
+
+  // ConversationService (depends on Claude provider, context manager, chart services, repository)
+  container.registerSingleton(tokens.CONVERSATION_SERVICE, (c) => {
+    const claudeProvider = c.resolve<ClaudeProvider>(tokens.CLAUDE_PROVIDER);
+    const contextManager = c.resolve<ContextManagerService>(tokens.CONTEXT_MANAGER_SERVICE);
+    const chartConfigService = c.resolve<ChartConfigService>(tokens.CHART_CONFIG_SERVICE);
+    const chartGenerationService = c.resolve<ChartGenerationService>(tokens.CHART_GENERATION_SERVICE);
+
+    // AI Analysis service is optional (may not have OpenAI key)
+    let analysisService: AIAnalysisService | undefined;
+    try {
+      analysisService = c.resolve<AIAnalysisService>(tokens.AI_ANALYSIS_SERVICE);
+    } catch {
+      // Analysis service not available (OpenAI key not configured)
+      console.warn('[DI] AI Analysis service not available - OpenAI key not configured');
+    }
+
+    // ConversationRepository is optional (may not have DATABASE_URL)
+    let conversationRepository: IConversationRepository | undefined;
+    try {
+      conversationRepository = c.resolve<IConversationRepository>(tokens.CONVERSATION_REPOSITORY);
+    } catch {
+      // Repository not available (DATABASE_URL not configured)
+      console.warn('[DI] ConversationRepository not available - DATABASE_URL not configured');
+    }
+
+    return new ConversationService({
+      claudeProvider,
+      contextManager,
+      chartConfigService,
+      chartGenerationService,
+      analysisService,
+      conversationRepository,
+    });
+  });
+
+  // ============================================================
+  // Controllers
+  // ============================================================
+
+  // ChatController (depends on ConversationService)
+  container.registerSingleton(tokens.CHAT_CONTROLLER, (c) => {
+    const conversationService = c.resolve<ConversationService>(tokens.CONVERSATION_SERVICE);
+    return new ChatController(conversationService);
   });
 }

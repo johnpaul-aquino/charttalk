@@ -1,6 +1,9 @@
-# Claude Integration Guide
+# Chart Service - Integration Guide
 
-This guide shows you how to integrate the MCP Chart-Image Server with **Claude Desktop**, **Claude Code**, and as a **REST API** for web/mobile applications.
+> **Microservice**: Chart Service
+> **Repository**: `mcp-chart-image`
+
+This guide shows you how to integrate the **Chart Service** with **Claude Desktop**, **Claude Code**, and as a **REST API** for web/mobile applications.
 
 ## Choose Your Integration Mode
 
@@ -208,31 +211,41 @@ Each module is designed with clear boundaries:
 - **Chart Module**: Chart generation, configuration, validation, indicators, drawings
 - **Analysis Module**: AI-powered chart analysis and signal generation with LLM vision
 - **Storage Module**: File operations, downloads, permanent storage (S3 integration)
-- **User Module**: Authentication, quotas, billing (planned for SaaS)
+- **User Module**: JWT authentication, plan-based access control, Laravel User Service integration
+- **Conversation Module**: Chat history persistence, message storage with PostgreSQL/Prisma
 
 ### Migration Status
 
 🟢 **Completed:**
-- Module structure created (Chart, Analysis, Storage, User)
+- Module structure created (Chart, Analysis, Storage, User, Conversation)
 - Chart module repositories (Indicators, Drawings)
 - Chart module services (ChartConfig, ChartValidation, ChartGeneration)
 - Storage module services (ChartStorage, Download, S3Storage)
-- **Analysis module (NEW!)** - AI-powered chart analysis
+- **Analysis module** - AI-powered chart analysis
   - OpenAI Vision Provider (GPT-4o, GPT-4o-mini support)
   - AI Analysis Service (technical, sentiment, signals, risk)
   - Signal Generation Service (trading signal parsing & validation)
   - LLM provider abstraction (easy to add Claude, Gemini, etc.)
+- **User module** - JWT authentication with Laravel User Service
+  - JWT validation with RSA public key
+  - Plan-based access control (`free`, `pro`, `max`)
+  - Subscription status checking (`active`, `trialing`, `past_due`, `canceled`)
+  - `withAuth` and `withPlan` middleware for protected endpoints
+- **Conversation module** - Chat history persistence
+  - PostgreSQL with Prisma ORM
+  - Conversation repository (CRUD operations)
+  - Message history with metadata
 - Core infrastructure (database loaders, HTTP client, config)
 - Dependency injection container (all services registered)
 - MCP tools: 9 tools (8 existing + analyze_chart)
 - Comprehensive unit tests (**109 tests, 100% passing**)
 - Test infrastructure (Vitest + coverage)
-- **REST API layer** (9 endpoints, middleware stack, controllers)
+- **REST API layer** (15 endpoints, middleware stack, controllers)
 - **API documentation** (comprehensive usage guide)
 
 ⚪ **Planned:**
 - Additional LLM providers (Claude, Gemini, local models)
-- User module services (authentication, quotas)
+- User quotas and billing integration
 - API integration tests
 - OpenAPI/Swagger specification
 - GitHub Actions CI/CD pipeline
@@ -982,6 +995,172 @@ GET /api/v1/documentation?section=all&forceRefresh=false
 
 Fetch chart-img.com API documentation.
 
+#### **9. Chat Messages** *(Premium - requires pro/max plan)*
+```bash
+POST /api/v1/chat/messages
+Content-Type: application/json
+Authorization: Bearer <JWT_TOKEN>
+
+{
+  "message": "Analyze this Bitcoin chart",
+  "conversationId": "conv_123",
+  "context": {
+    "symbol": "BINANCE:BTCUSDT",
+    "interval": "4h"
+  }
+}
+```
+
+Send a message and get AI response (non-streaming).
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "messageId": "msg_456",
+    "conversationId": "conv_123",
+    "content": "Based on the Bitcoin chart...",
+    "role": "assistant",
+    "createdAt": "2025-11-28T10:30:00.000Z"
+  }
+}
+```
+
+#### **10. Chat Messages Stream** *(Premium - requires pro/max plan)*
+```bash
+POST /api/v1/chat/messages/stream
+Content-Type: application/json
+Authorization: Bearer <JWT_TOKEN>
+
+{
+  "message": "Analyze this Bitcoin chart",
+  "conversationId": "conv_123"
+}
+```
+
+Send a message and get AI response via Server-Sent Events (SSE).
+
+**Response:** SSE stream with events:
+- `message` - Partial message content
+- `done` - Stream complete
+- `error` - Error occurred
+
+#### **11. List Conversations** *(Premium - requires pro/max plan)*
+```bash
+GET /api/v1/conversations?page=1&limit=20&isPinned=false&isArchived=false
+Authorization: Bearer <JWT_TOKEN>
+```
+
+List user's conversations with pagination.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "conv_123",
+      "title": "Bitcoin Analysis",
+      "isPinned": false,
+      "isArchived": false,
+      "createdAt": "2025-11-28T09:00:00.000Z",
+      "updatedAt": "2025-11-28T10:30:00.000Z"
+    }
+  ],
+  "meta": {
+    "total": 42,
+    "page": 1,
+    "limit": 20,
+    "totalPages": 3
+  }
+}
+```
+
+#### **12. Create Conversation** *(Premium - requires pro/max plan)*
+```bash
+POST /api/v1/conversations
+Content-Type: application/json
+Authorization: Bearer <JWT_TOKEN>
+
+{
+  "title": "Bitcoin Analysis Session"
+}
+```
+
+Create a new conversation.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "conv_789",
+    "title": "Bitcoin Analysis Session",
+    "userId": "user_123",
+    "isPinned": false,
+    "isArchived": false,
+    "createdAt": "2025-11-28T11:00:00.000Z"
+  }
+}
+```
+
+#### **13. Get Conversation** *(Premium - requires pro/max plan)*
+```bash
+GET /api/v1/conversations/:id
+Authorization: Bearer <JWT_TOKEN>
+```
+
+Get conversation with messages.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "conv_123",
+    "title": "Bitcoin Analysis",
+    "messages": [
+      {
+        "id": "msg_1",
+        "role": "user",
+        "content": "Analyze Bitcoin 4H chart",
+        "createdAt": "2025-11-28T09:00:00.000Z"
+      },
+      {
+        "id": "msg_2",
+        "role": "assistant",
+        "content": "Based on the analysis...",
+        "createdAt": "2025-11-28T09:00:05.000Z"
+      }
+    ]
+  }
+}
+```
+
+#### **14. Update Conversation** *(Premium - requires pro/max plan)*
+```bash
+PATCH /api/v1/conversations/:id
+Content-Type: application/json
+Authorization: Bearer <JWT_TOKEN>
+
+{
+  "title": "Updated Title",
+  "isPinned": true,
+  "isArchived": false
+}
+```
+
+Update conversation metadata.
+
+#### **15. Delete Conversation** *(Premium - requires pro/max plan)*
+```bash
+DELETE /api/v1/conversations/:id
+Authorization: Bearer <JWT_TOKEN>
+```
+
+Delete a conversation and all its messages.
+
 ### API Features
 
 #### **Middleware Stack**
@@ -1024,14 +1203,66 @@ Default limits:
 
 **✅ Request Validation** - Zod schema validation for all inputs
 
-**✅ Optional Authentication** - API key support (development mode accepts any key)
-```bash
-# Via header
-curl -H "X-API-Key: your-key-here" ...
+**✅ JWT Authentication** - Secure authentication with Laravel User Service integration
 
-# Via Bearer token
-curl -H "Authorization: Bearer your-key-here" ...
+ChartTalk uses JWT (JSON Web Tokens) for authentication, designed to integrate with the Laravel User Service microservice.
+
+**Token Format:**
+```bash
+# Send JWT via Authorization header (preferred)
+curl -H "Authorization: Bearer <JWT_TOKEN>" ...
+
+# Or via X-API-Key header (fallback)
+curl -H "X-API-Key: <JWT_TOKEN>" ...
 ```
+
+**JWT Payload (from Laravel User Service):**
+```json
+{
+  "sub": "user_123",              // User ID
+  "email": "user@example.com",    // User's email
+  "name": "John Doe",             // Display name
+  "plan": "pro",                  // Subscription plan (free, pro, max)
+  "plan_name": "Pro",             // Human-readable plan name
+  "subscription_status": "active", // active, trialing, past_due, canceled
+  "iat": 1732789200,              // Issued at
+  "exp": 1732792800,              // Expiration
+  "iss": "laravel-user-service"   // Issuer (verified)
+}
+```
+
+**Plan-Based Access Control:**
+
+| Plan | Access Level |
+|------|-------------|
+| `free` | Basic chart endpoints only |
+| `pro` | All endpoints including conversations, AI analysis, S3 storage |
+| `max` | All endpoints with higher rate limits |
+
+**Protected Endpoints (require `pro` or `max` plan):**
+- `POST /api/v1/chat/messages` - AI chat
+- `POST /api/v1/chat/messages/stream` - Streaming AI chat
+- `POST /api/v1/analysis/chart` - AI chart analysis
+- `POST /api/v1/storage/s3` - Permanent S3 storage
+- `GET/POST/PATCH/DELETE /api/v1/conversations/*` - Conversation management
+
+**Development Mode:**
+
+Set `AUTH_DEV_BYPASS=true` in `.env` to skip JWT validation during development:
+```bash
+# .env
+AUTH_DEV_BYPASS=true
+```
+This provides a test user with `pro` plan and `active` subscription.
+
+**Configuration:**
+```bash
+# .env
+JWT_PUBLIC_KEY_PATH=./keys/jwt-public.pem  # RSA public key for verification
+JWT_ISSUER=laravel-user-service             # Expected issuer claim
+```
+
+See `.docs/jwt-authentication.md` for complete JWT integration documentation.
 
 #### **Error Codes**
 
@@ -1040,7 +1271,8 @@ Standard error codes across all endpoints:
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
 | `BAD_REQUEST` | 400 | Invalid request body |
-| `UNAUTHORIZED` | 401 | Missing/invalid API key |
+| `UNAUTHORIZED` | 401 | Missing/invalid JWT token |
+| `FORBIDDEN` | 403 | Plan upgrade required or subscription inactive |
 | `NOT_FOUND` | 404 | Resource not found |
 | `VALIDATION_ERROR` | 422 | Request validation failed |
 | `RATE_LIMIT_EXCEEDED` | 429 | Too many requests |

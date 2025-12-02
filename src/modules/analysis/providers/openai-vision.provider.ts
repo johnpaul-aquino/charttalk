@@ -12,7 +12,7 @@ import * as fs from 'fs';
 import {
   ILLMProvider,
   ImageInput,
-  AnalysisOptions,
+  LLMAnalysisOptions,
 } from './llm-provider.interface';
 
 /**
@@ -155,7 +155,7 @@ export class OpenAIVisionProvider implements ILLMProvider {
   async analyzeImage(
     imageInput: ImageInput,
     prompt: string,
-    options?: AnalysisOptions
+    options?: LLMAnalysisOptions
   ): Promise<string> {
     // Prepare image URL (handle different input types)
     const imageUrl = await this.prepareImageUrl(imageInput);

@@ -158,8 +158,8 @@ Returns:
         description: 'User preferences to override defaults',
       },
     },
-    required: ['naturalLanguage'] as const,
-  } as const,
+    required: ['naturalLanguage'],
+  },
   annotations: {
     title: 'Construct Chart Config',
     readOnlyHint: true,

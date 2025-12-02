@@ -10,6 +10,7 @@ export * from './auth.middleware';
 export * from './cors.middleware';
 export * from './error-handler.middleware';
 export * from './rate-limiter.middleware';
+export * from './sse.middleware';
 
 /**
  * Compose multiple middleware functions

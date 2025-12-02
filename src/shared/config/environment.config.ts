@@ -28,6 +28,14 @@ export interface AppConfig {
     timeout?: number;
     maxRetries?: number;
   };
+  anthropic?: {
+    apiKey?: string;
+    defaultModel?: string;
+    maxTokens?: number;
+    temperature?: number;
+    timeout?: number;
+    maxRetries?: number;
+  };
   aws: {
     accessKeyId?: string;
     secretAccessKey?: string;
@@ -84,6 +92,16 @@ export function loadConfig(): AppConfig {
           temperature: parseFloat(process.env.ANALYSIS_TEMPERATURE || '0.7'),
           timeout: parseInt(process.env.ANALYSIS_TIMEOUT || '60000'),
           maxRetries: parseInt(process.env.ANALYSIS_MAX_RETRIES || '3'),
+        }
+      : undefined,
+    anthropic: process.env.ANTHROPIC_API_KEY
+      ? {
+          apiKey: process.env.ANTHROPIC_API_KEY,
+          defaultModel: process.env.CLAUDE_MODEL || 'claude-opus-4-5-20251101',
+          maxTokens: parseInt(process.env.CLAUDE_MAX_TOKENS || '4096'),
+          temperature: parseFloat(process.env.CLAUDE_TEMPERATURE || '0.7'),
+          timeout: parseInt(process.env.CLAUDE_TIMEOUT || '60000'),
+          maxRetries: parseInt(process.env.CLAUDE_MAX_RETRIES || '3'),
         }
       : undefined,
     aws: {

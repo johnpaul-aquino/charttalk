@@ -25,8 +25,8 @@ export function loadDrawingsDatabase(): DrawingsDatabase {
   }
 
   try {
-    // Get database file path (now in core/database/)
-    const dbPath = path.resolve(__dirname, '../drawings.json');
+    // Get database file path - use process.cwd() for Next.js compatibility
+    const dbPath = path.join(process.cwd(), 'src/core/database/drawings.json');
 
     if (!fs.existsSync(dbPath)) {
       console.warn(`[drawings-loader] Database not found at ${dbPath}`);

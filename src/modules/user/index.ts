@@ -1,15 +1,25 @@
 /**
  * User Module
  *
- * Exports all user-related services and interfaces (Future implementation)
+ * Handles user authentication and JWT validation.
+ * Designed to integrate with Laravel User Service microservice.
+ *
+ * @see .docs/jwt-authentication.md for JWT payload documentation
  */
 
-// Interfaces (to be added when implementing user management)
+// Services
+export { JWTService } from './services/jwt.service';
+
+// Types - JWT payload and verification result
+export type {
+  JWTPayload,
+  JWTVerifyResult,
+  JWTUserContext,
+  PlanType,
+  SubscriptionStatus,
+} from './services/jwt.service';
+
+// Future exports (to be added when implementing full user management)
 // export * from './interfaces/user.interface';
-
-// Services (to be added when implementing user management)
-// export * from './services/auth.service';
 // export * from './services/quota.service';
-
-// Domain models (to be added when implementing user management)
 // export * from './domain/user';

@@ -86,3 +86,11 @@ export function withCors(
     return addCorsHeaders(response, origin);
   };
 }
+
+/**
+ * OPTIONS handler for Next.js App Router
+ * Export this from route files: export { OPTIONS } from '...cors.middleware'
+ */
+export async function OPTIONS(req: NextRequest): Promise<NextResponse> {
+  return handleCorsPreFlight(req);
+}

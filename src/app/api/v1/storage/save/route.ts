@@ -53,3 +53,6 @@ export const POST = pipe(
   withOptionalAuth,
   withErrorHandler
 )(handler);
+
+// Handle CORS preflight requests
+export { OPTIONS } from '../../../../../api/middleware/cors.middleware';

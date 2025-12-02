@@ -54,3 +54,6 @@ async function handler(req: NextRequest) {
 
 // Apply middleware
 export const GET = pipe(withCors, withErrorHandler)(handler);
+
+// Handle CORS preflight requests
+export { OPTIONS } from '../../../../api/middleware/cors.middleware';

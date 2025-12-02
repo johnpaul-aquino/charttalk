@@ -8,3 +8,4 @@
 
 export * from './llm-provider.interface';
 export * from './openai-vision.provider';
+export * from './claude.provider';

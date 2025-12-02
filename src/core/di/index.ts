@@ -6,6 +6,12 @@
 
 import { DIContainer } from './container';
 import { registerProviders } from './providers';
+import * as tokens from './tokens';
+
+// Import types for convenience functions
+import type { ChatController } from '../../api/controllers/chat.controller';
+import type { ConversationService } from '../../modules/conversation/services/conversation.service';
+import type { ClaudeProvider } from '../../modules/analysis/providers/claude.provider';
 
 // Export tokens for external use
 export * from './tokens';
@@ -25,4 +31,29 @@ export { container };
  */
 export function getService<T>(token: symbol): T {
   return container.resolve<T>(token);
+}
+
+// ============================================================
+// Convenience functions for commonly used services
+// ============================================================
+
+/**
+ * Get ChatController instance
+ */
+export function getChatController(): ChatController {
+  return container.resolve<ChatController>(tokens.CHAT_CONTROLLER);
+}
+
+/**
+ * Get ConversationService instance
+ */
+export function getConversationService(): ConversationService {
+  return container.resolve<ConversationService>(tokens.CONVERSATION_SERVICE);
+}
+
+/**
+ * Get ClaudeProvider instance
+ */
+export function getClaudeProvider(): ClaudeProvider {
+  return container.resolve<ClaudeProvider>(tokens.CLAUDE_PROVIDER);
 }

@@ -117,8 +117,8 @@ Example errors:
         default: 'PRO',
       },
     },
-    required: ['config'] as const,
-  } as const,
+    required: ['config'],
+  },
   annotations: {
     title: 'Validate Chart Config',
     readOnlyHint: true,

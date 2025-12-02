@@ -8,9 +8,9 @@
  */
 
 /**
- * Options for image analysis
+ * Options for LLM image analysis
  */
-export interface AnalysisOptions {
+export interface LLMAnalysisOptions {
   /**
    * Model to use for analysis (e.g., "gpt-4o-mini", "gpt-4o")
    */
@@ -76,7 +76,7 @@ export interface ILLMProvider {
   analyzeImage(
     imageInput: ImageInput,
     prompt: string,
-    options?: AnalysisOptions
+    options?: LLMAnalysisOptions
   ): Promise<string>;
 
   /**
