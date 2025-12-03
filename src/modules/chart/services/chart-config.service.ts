@@ -334,14 +334,10 @@ export class ChartConfigService implements IChartConfigService {
       'relative strength': 'Relative Strength Index',
       'macd': 'MACD',
       'moving average convergence': 'MACD',
-      'moving average': 'Moving Average',
-      'ma ': 'Moving Average', // Space to avoid matching "macd"
-      'ema': 'Moving Average Exponential',
-      'exponential moving average': 'Moving Average Exponential',
-      'sma': 'Moving Average',
-      'simple moving average': 'Moving Average',
       'volume': 'Volume',
       'stochastic': 'Stochastic',
+      'stochastic rsi': 'Stochastic RSI',
+      'stoch rsi': 'Stochastic RSI',
       'stoch': 'Stochastic',
       'atr': 'Average True Range',
       'average true range': 'Average True Range',
@@ -363,6 +359,93 @@ export class ChartConfigService implements IChartConfigService {
         addedStudies.add(indicatorName);
         console.log(`[ChartConfigService] Detected indicator: ${keyword} -> ${indicatorName}`);
       }
+    }
+
+    // Handle Moving Averages with periods (MA 20, MA 50, EMA 9, etc.)
+    // Pattern: (ma|sma|ema|moving average) followed by period number
+    const maPatterns = [
+      // MA with period: "MA 20", "ma20", "MA-20", "20 MA", "20-day MA"
+      /(?:ma|sma|moving average)[- ]?(\d+)/gi,
+      /(\d+)[- ]?(?:day|period)?[- ]?(?:ma|sma|moving average)/gi,
+      // EMA with period: "EMA 9", "ema9", "9 EMA", "9-day EMA"
+      /(?:ema|exponential moving average)[- ]?(\d+)/gi,
+      /(\d+)[- ]?(?:day|period)?[- ]?(?:ema|exponential moving average)/gi,
+    ];
+
+    const maPeriods = new Set<number>();
+    const emaPeriods = new Set<number>();
+
+    for (const pattern of maPatterns) {
+      const isEma = pattern.source.includes('ema');
+      let match;
+      while ((match = pattern.exec(nl)) !== null) {
+        const period = parseInt(match[1]);
+        if (period > 0 && period <= 500) {
+          if (isEma) {
+            emaPeriods.add(period);
+          } else {
+            maPeriods.add(period);
+          }
+        }
+      }
+    }
+
+    // Add MA studies with specific periods
+    // chart-img.com API expects { length: <period> } for Moving Average
+    for (const period of maPeriods) {
+      const key = `Moving Average-${period}`;
+      if (!addedStudies.has(key)) {
+        studies.push({
+          name: 'Moving Average',
+          input: { length: period },
+        });
+        addedStudies.add(key);
+        console.log(`[ChartConfigService] Detected MA with period: ${period}`);
+      }
+    }
+
+    // Add EMA studies with specific periods
+    // chart-img.com API expects { length: <period> } for Moving Average Exponential
+    for (const period of emaPeriods) {
+      const key = `Moving Average Exponential-${period}`;
+      if (!addedStudies.has(key)) {
+        studies.push({
+          name: 'Moving Average Exponential',
+          input: { length: period },
+        });
+        addedStudies.add(key);
+        console.log(`[ChartConfigService] Detected EMA with period: ${period}`);
+      }
+    }
+
+    // If "moving average" mentioned but no period specified, add default
+    if (
+      (nl.includes('moving average') || nl.match(/\bma\b/)) &&
+      !nl.includes('macd') &&
+      maPeriods.size === 0 &&
+      emaPeriods.size === 0 &&
+      !addedStudies.has('Moving Average')
+    ) {
+      studies.push({
+        name: 'Moving Average',
+        input: undefined, // Default period (usually 9)
+      });
+      addedStudies.add('Moving Average');
+      console.log(`[ChartConfigService] Detected indicator: moving average -> Moving Average (default)`);
+    }
+
+    // If "ema" mentioned but no period specified, add default
+    if (
+      (nl.includes('ema') || nl.includes('exponential moving average')) &&
+      emaPeriods.size === 0 &&
+      !addedStudies.has('Moving Average Exponential')
+    ) {
+      studies.push({
+        name: 'Moving Average Exponential',
+        input: undefined, // Default period
+      });
+      addedStudies.add('Moving Average Exponential');
+      console.log(`[ChartConfigService] Detected indicator: ema -> Moving Average Exponential (default)`);
     }
 
     return studies;

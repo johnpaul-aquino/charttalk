@@ -305,6 +305,7 @@ export class ClaudeProvider implements ILLMProvider {
     const contentBlocks: ClaudeContentBlock[] = [];
     let currentTextBlock: ClaudeTextBlock | null = null;
     let currentToolUse: ClaudeToolUseBlock | null = null;
+    let currentToolInputJson = ''; // Accumulator for tool input JSON
 
     for await (const event of stream) {
       switch (event.type) {
@@ -318,6 +319,7 @@ export class ClaudeProvider implements ILLMProvider {
               name: event.content_block.name,
               input: {},
             };
+            currentToolInputJson = ''; // Reset JSON accumulator
           }
           break;
 
@@ -331,8 +333,8 @@ export class ClaudeProvider implements ILLMProvider {
             event.delta.type === 'input_json_delta' &&
             currentToolUse
           ) {
-            // Accumulate tool input JSON
-            // The delta contains partial JSON, we'll parse it at block_stop
+            // Accumulate tool input JSON fragments
+            currentToolInputJson += event.delta.partial_json;
           }
           break;
 
@@ -342,11 +344,21 @@ export class ClaudeProvider implements ILLMProvider {
             currentTextBlock = null;
           }
           if (currentToolUse) {
+            // Parse accumulated JSON into tool input
+            if (currentToolInputJson) {
+              try {
+                currentToolUse.input = JSON.parse(currentToolInputJson);
+              } catch (e) {
+                console.error('[ClaudeProvider] Failed to parse tool input JSON:', currentToolInputJson);
+                // Keep empty input if parsing fails
+              }
+            }
             contentBlocks.push(currentToolUse);
             if (toolUseCallback) {
               toolUseCallback(currentToolUse);
             }
             currentToolUse = null;
+            currentToolInputJson = '';
           }
           break;
 

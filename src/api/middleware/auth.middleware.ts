@@ -137,6 +137,25 @@ export function withAuth(
   return async (req: NextRequest, context?: any): Promise<NextResponse> => {
     const token = extractToken(req);
 
+    // Development bypass mode - allow requests without token
+    if (
+      process.env.NODE_ENV === 'development' &&
+      process.env.AUTH_DEV_BYPASS === 'true' &&
+      !token
+    ) {
+      const authContext = {
+        ...context,
+        auth: {
+          userId: 'dev-user',
+          email: 'dev@example.com',
+          name: 'Dev User',
+          plan: 'pro' as PlanType,
+          subscriptionStatus: 'active' as SubscriptionStatus,
+        } as AuthContext,
+      };
+      return handler(req, authContext);
+    }
+
     if (!token) {
       const error = Errors.unauthorized(
         'Authentication required. Provide JWT via Authorization: Bearer <token>'

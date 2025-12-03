@@ -19,6 +19,9 @@ export interface ChatMessage {
   role: MessageRole;
   content: string;
   chartId?: string;
+  chartUrl?: string;
+  chartSymbol?: string;
+  chartInterval?: string;
   analysisId?: string;
   toolCalls?: ToolCallRecord[];
   createdAt: Date;

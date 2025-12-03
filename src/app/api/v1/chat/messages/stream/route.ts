@@ -59,6 +59,15 @@ function validateAuthAndPlan(req: NextRequest): AuthResult {
     token = req.headers.get('x-api-key');
   }
 
+  // Development bypass mode - allow requests without token
+  if (
+    process.env.NODE_ENV === 'development' &&
+    process.env.AUTH_DEV_BYPASS === 'true' &&
+    !token
+  ) {
+    return { valid: true, userId: 'dev-user' };
+  }
+
   if (!token) {
     return { valid: false, code: 'UNAUTHORIZED', message: 'Authentication required. Provide JWT via Authorization: Bearer <token>' };
   }

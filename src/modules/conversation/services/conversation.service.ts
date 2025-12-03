@@ -55,6 +55,35 @@ export class ConversationService implements IConversationService {
   private analysisService?: IAIAnalysisService;
   private conversationRepository?: IConversationRepository;
 
+  // Store generated chart data for analysis (within same conversation turn)
+  private lastGeneratedChart: {
+    imageUrl: string;
+    symbol: string;
+    interval: string;
+  } | null = null;
+
+  /**
+   * Restore chart context from conversation history
+   * Looks for the most recent message that has chart data (stored in chartUrl, chartSymbol, chartInterval)
+   */
+  private restoreChartContextFromHistory(messages: ChatMessage[]): void {
+    // Find the most recent message with chart data (search from end)
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      // Check if this message has chart URL persisted
+      if (msg.chartUrl) {
+        this.lastGeneratedChart = {
+          imageUrl: msg.chartUrl,
+          symbol: msg.chartSymbol || 'UNKNOWN',
+          interval: msg.chartInterval || '4h',
+        };
+        console.log('[ConversationService] Restored chart context from history:', this.lastGeneratedChart);
+        return;
+      }
+    }
+    console.log('[ConversationService] No chart context found in conversation history');
+  }
+
   constructor(config: ConversationServiceConfig) {
     this.claudeProvider = config.claudeProvider;
     this.contextManager = config.contextManager;
@@ -72,18 +101,54 @@ export class ConversationService implements IConversationService {
     conversationId?: string
   ): Promise<Conversation | null> {
     if (!this.conversationRepository) {
+      console.warn('[ConversationService] Repository not configured - conversation history will not persist');
       return null;
     }
 
     if (conversationId) {
       const existing = await this.conversationRepository.getConversationWithMessages(conversationId);
-      if (existing && existing.userId === userId) {
+      if (!existing) {
+        console.warn(`[ConversationService] Conversation ${conversationId} not found, creating new`);
+      } else if (existing.userId !== userId) {
+        console.error(`[ConversationService] User ${userId} trying to access conversation of different user`);
+        return null; // Don't create new - return null to indicate unauthorized
+      } else {
+        console.log(`[ConversationService] Loaded conversation ${conversationId} with ${existing.messages.length} messages`);
         return existing;
       }
     }
 
     // Create new conversation
-    return this.conversationRepository.createConversation({ userId });
+    const newConversation = await this.conversationRepository.createConversation({ userId });
+    console.log(`[ConversationService] Created new conversation ${newConversation.id}`);
+    return newConversation;
+  }
+
+  /**
+   * Generate a smart title from the first user message
+   */
+  private generateConversationTitle(message: string): string {
+    const symbolPatterns = [
+      /\b(BINANCE|NASDAQ|NYSE|FX):(\w+)\b/gi,
+      /\b(BTC|ETH|SOL|XRP|ADA|AAPL|GOOGL|MSFT|TSLA)\b/gi,
+      /\b(Bitcoin|Ethereum|Solana|Apple|Tesla)\b/gi,
+    ];
+    const timeframePatterns = [/\b(1m|5m|15m|30m|1h|4h|1D|1W|1M)\b/gi];
+    const indicatorPatterns = [/\b(RSI|MACD|BB|EMA|SMA|MA|Bollinger)\b/gi];
+
+    let symbol = '', timeframe = '', indicator = '';
+    for (const p of symbolPatterns) { const m = message.match(p); if (m) { symbol = m[0].toUpperCase(); break; } }
+    for (const p of timeframePatterns) { const m = message.match(p); if (m) { timeframe = m[0].toUpperCase(); break; } }
+    for (const p of indicatorPatterns) { const m = message.match(p); if (m) { indicator = m[0].toUpperCase(); break; } }
+
+    if (symbol) {
+      const parts = [symbol];
+      if (timeframe) parts.push(timeframe);
+      if (indicator) parts.push(`with ${indicator}`);
+      return parts.join(' ') + ' Analysis';
+    }
+    const cleaned = message.replace(/\s+/g, ' ').trim();
+    return cleaned.length > 40 ? cleaned.substring(0, 40) + '...' : cleaned;
   }
 
   /**
@@ -135,11 +200,22 @@ export class ConversationService implements IConversationService {
         const conversation = await this.getOrCreateConversation(request.userId, conversationId);
         if (conversation) {
           conversationId = conversation.id;
-          // If we have a conversation with messages, use them as history
-          if (!request.conversationHistory && conversation.messages.length > 0) {
+
+          // Auto-generate title if this is a new conversation (no messages yet)
+          if (conversation.messages.length === 0 && conversation.title === 'New Conversation') {
+            const newTitle = this.generateConversationTitle(request.message);
+            await this.conversationRepository.updateConversation(conversationId, { title: newTitle });
+            console.log(`[ConversationService] Auto-generated title: "${newTitle}"`);
+          }
+
+          // ALWAYS load history from database (remove the !request.conversationHistory check)
+          if (conversation.messages.length > 0) {
+            console.log(`[ConversationService] Using ${conversation.messages.length} messages from database`);
             request = { ...request, conversationHistory: conversation.messages };
           }
         }
+      } else {
+        console.warn('[ConversationService] No repository or userId - conversation history will not persist');
       }
       conversationId = conversationId || uuidv4();
 
@@ -149,6 +225,12 @@ export class ConversationService implements IConversationService {
       // Build conversation history
       const history = request.conversationHistory || [];
       const claudeMessages = this.contextManager.buildConversationHistory(history);
+
+      // Log what we're sending to Claude for debugging
+      console.log('[ConversationService] Sending to Claude:', {
+        historyMessageCount: claudeMessages.length,
+        newMessage: request.message.substring(0, 50) + (request.message.length > 50 ? '...' : '')
+      });
 
       // Add the new user message
       claudeMessages.push({
@@ -204,17 +286,32 @@ export class ConversationService implements IConversationService {
     request: SendMessageRequest,
     onEvent: (event: StreamEvent) => void
   ): Promise<SendMessageResponse> {
+    // Reset chart context for each new conversation turn (will be populated from history if available)
+    this.lastGeneratedChart = null;
+
     // Get or create conversation if persistence is enabled
     let conversationId = request.conversationId;
     if (this.conversationRepository && request.userId) {
       const conversation = await this.getOrCreateConversation(request.userId, conversationId);
       if (conversation) {
         conversationId = conversation.id;
-        // If we have a conversation with messages, use them as history
-        if (!request.conversationHistory && conversation.messages.length > 0) {
-          request = { ...request, conversationHistory: conversation.messages };
+
+        // Auto-generate title if this is a new conversation (no messages yet)
+        if (conversation.messages.length === 0 && conversation.title === 'New Conversation') {
+          const newTitle = this.generateConversationTitle(request.message);
+          await this.conversationRepository.updateConversation(conversationId, { title: newTitle });
+          console.log(`[ConversationService] Auto-generated title: "${newTitle}"`);
         }
+
+        // ALWAYS load history from database (ignore any conversationHistory from request)
+        console.log(`[ConversationService] DB has ${conversation.messages.length} messages for conversation ${conversationId}`);
+        request = { ...request, conversationHistory: conversation.messages };
+
+        // Try to restore last chart context from conversation history
+        this.restoreChartContextFromHistory(conversation.messages);
       }
+    } else {
+      console.warn('[ConversationService] No repository or userId - conversation history will not persist');
     }
     conversationId = conversationId || uuidv4();
 
@@ -228,6 +325,16 @@ export class ConversationService implements IConversationService {
       // Build conversation history
       const history = request.conversationHistory || [];
       const claudeMessages = this.contextManager.buildConversationHistory(history);
+
+      // Log what we're sending to Claude for debugging
+      const lastContent = claudeMessages.length > 0 ? claudeMessages[claudeMessages.length - 1].content : null;
+      console.log('[ConversationService] Final history being sent to Claude:', {
+        messageCount: claudeMessages.length,
+        roles: claudeMessages.map(m => m.role),
+        lastMessagePreview: lastContent
+          ? (typeof lastContent === 'string' ? lastContent.substring(0, 100) : '[complex content]')
+          : 'none'
+      });
 
       // Add the new user message
       claudeMessages.push({
@@ -524,6 +631,14 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
         throw new Error(result.error || 'Chart generation failed');
       }
 
+      // Store chart data for potential analysis
+      this.lastGeneratedChart = {
+        imageUrl: result.imageUrl || '',
+        symbol,
+        interval,
+      };
+      console.log('[ConversationService] Stored chart for potential analysis:', this.lastGeneratedChart);
+
       return {
         imageUrl: result.imageUrl || '',
         symbol,
@@ -546,15 +661,22 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
       throw new Error('Analysis service not configured');
     }
 
-    const chartId = input.chartId as string;
+    // Use stored chart data if available, otherwise try to use input
+    const chartUrl = this.lastGeneratedChart?.imageUrl || (input.chartUrl as string);
+    const symbol = this.lastGeneratedChart?.symbol || (input.symbol as string) || 'UNKNOWN';
+    const interval = this.lastGeneratedChart?.interval || (input.interval as string) || '4h';
     const tradingStyle = (input.tradingStyle as string) || 'swing_trading';
 
-    // For now, return a placeholder - actual implementation would fetch the chart
-    // and run AI analysis using the analysis service
+    if (!chartUrl || !chartUrl.startsWith('http')) {
+      throw new Error('No valid chart URL available for analysis. Generate a chart first.');
+    }
+
+    console.log('[ConversationService] Analyzing chart:', { chartUrl, symbol, interval, tradingStyle });
+
     const result = await this.analysisService.analyzeChart({
-      chartUrl: chartId, // In real impl, this would be the chart URL
-      symbol: 'UNKNOWN',
-      interval: '4h',
+      chartUrl,
+      symbol,
+      interval,
       options: {
         tradingStyle: tradingStyle as 'day_trading' | 'swing_trading' | 'scalping',
       },

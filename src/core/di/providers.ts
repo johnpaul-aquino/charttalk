@@ -171,8 +171,9 @@ export function registerProviders(container: DIContainer): void {
   });
 
   // AIAnalysisService (depends on LLM provider and signal generation service)
+  // Using Claude provider for analysis (instead of OpenAI)
   container.registerSingleton(tokens.AI_ANALYSIS_SERVICE, (c) => {
-    const llmProvider = c.resolve<ILLMProvider>(tokens.OPENAI_VISION_PROVIDER);
+    const llmProvider = c.resolve<ILLMProvider>(tokens.CLAUDE_PROVIDER);
     const signalGenerator = c.resolve<SignalGenerationService>(
       tokens.SIGNAL_GENERATION_SERVICE
     );
@@ -224,13 +225,13 @@ export function registerProviders(container: DIContainer): void {
     const chartConfigService = c.resolve<ChartConfigService>(tokens.CHART_CONFIG_SERVICE);
     const chartGenerationService = c.resolve<ChartGenerationService>(tokens.CHART_GENERATION_SERVICE);
 
-    // AI Analysis service is optional (may not have OpenAI key)
+    // AI Analysis service is optional (may not have Anthropic key)
     let analysisService: AIAnalysisService | undefined;
     try {
       analysisService = c.resolve<AIAnalysisService>(tokens.AI_ANALYSIS_SERVICE);
     } catch {
-      // Analysis service not available (OpenAI key not configured)
-      console.warn('[DI] AI Analysis service not available - OpenAI key not configured');
+      // Analysis service not available (Anthropic key not configured)
+      console.warn('[DI] AI Analysis service not available - ANTHROPIC_API_KEY not configured');
     }
 
     // ConversationRepository is optional (may not have DATABASE_URL)

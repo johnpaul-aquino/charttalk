@@ -80,6 +80,9 @@ function mapPrismaMessage(
     role: prismaMsg.role as MessageRole,
     content: prismaMsg.content,
     chartId: prismaMsg.chartId || undefined,
+    chartUrl: prismaMsg.chartUrl || undefined,
+    chartSymbol: prismaMsg.chartSymbol || undefined,
+    chartInterval: prismaMsg.chartInterval || undefined,
     createdAt: prismaMsg.createdAt,
   };
 }
