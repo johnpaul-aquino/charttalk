@@ -2351,6 +2351,83 @@ Tests run automatically on:
 
 **Best Practice**: Run `npm test` before committing code to ensure all tests pass.
 
+### E2E Testing with Playwright
+
+E2E tests have been **moved to a separate repository** for better separation of concerns:
+
+**E2E Test Repository:** `/Users/paul/Desktop/projects/charttalk-test`
+
+#### Repository Structure
+
+```
+charttalk-test/                   # Separate E2E test repository
+├── package.json                  # Standalone test project
+├── playwright.config.ts          # Playwright configuration
+├── tests/                        # Test specifications
+│   ├── navigation.spec.ts        # 12 tests
+│   ├── single-chart.spec.ts      # 12 tests
+│   ├── multi-chart.spec.ts       # 4 tests
+│   ├── multi-timeframe.spec.ts   # 3 tests
+│   ├── conversation.spec.ts      # 11 tests
+│   └── error-handling.spec.ts    # 15 tests
+├── fixtures/
+│   └── auth.ts                   # Mock JWT authentication
+├── utils/
+│   └── test-helpers.ts           # Helper functions
+└── scripts/                      # Manual test scripts
+```
+
+#### What's Being Tested
+
+```
+Frontend (charttalk.ai)          Backend (mcp-chart-image)
+localhost:3000                   localhost:3010
+┌─────────────────────┐         ┌─────────────────────────┐
+│  Chat Interface UI  │ ──SSE──▶│  /api/v1/chat/messages  │
+│  Message Input      │         │  Chart Generation       │
+│  Chart Display      │◀────────│  Claude AI + chart-img  │
+│  Conversation List  │         │  PostgreSQL Storage     │
+└─────────────────────┘         └─────────────────────────┘
+```
+
+#### Running E2E Tests
+
+```bash
+# Prerequisites: Both servers must be running
+# Terminal 1 - Frontend (charttalk.ai)
+cd /Users/paul/Desktop/projects/charttalk.ai && npm run dev
+
+# Terminal 2 - Backend (mcp-chart-image)
+cd /Users/paul/Desktop/projects/mcp-chart-image && npm run dev
+
+# Terminal 3 - Run E2E tests from charttalk-test
+cd /Users/paul/Desktop/projects/charttalk-test
+npm test                    # Run all tests
+npm run test:ui             # Run with UI (visual debugging)
+npm run test:headed         # Run with browser visible
+npm run test:debug          # Run in debug mode
+npm run test:report         # View last test report
+```
+
+#### Test Categories
+
+| Category | Tests | Description |
+|----------|-------|-------------|
+| Navigation | 12 | UI elements, routing, responsive design |
+| Single Chart | 12 | Basic chart generation, indicators, symbols |
+| Multi-Chart | 4 | Multiple symbols in one request |
+| Multi-Timeframe | 3 | Multiple timeframes for one symbol |
+| Conversation | 11 | Message persistence, history, navigation |
+| Error Handling | 15 | Edge cases, validation, network errors |
+
+**Total: ~57 E2E tests**
+
+#### Authentication Bypass
+
+The E2E tests use mock authentication. Backend should have `AUTH_DEV_BYPASS=true` in `.env`.
+
+See `charttalk-test/README.md` for full E2E testing documentation
+
 ---
 
 ## Tips for Best Results

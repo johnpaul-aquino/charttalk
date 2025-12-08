@@ -65,24 +65,43 @@ export interface SendMessageRequest {
 }
 
 /**
+ * Chart data returned in responses
+ */
+export interface ChartData {
+  imageUrl: string;
+  symbol: string;
+  interval: string;
+  s3Url?: string;
+  requestId?: string;
+}
+
+/**
+ * Analysis result returned in responses
+ */
+export interface AnalysisData {
+  symbol?: string;
+  trend: string;
+  recommendation: string;
+  confidence: number;
+  signals: string[];
+}
+
+/**
  * Response from sending a message
  */
 export interface SendMessageResponse {
   success: boolean;
   message: ChatMessage;
   conversationId: string;
-  chart?: {
-    imageUrl: string;
-    symbol: string;
-    interval: string;
-    s3Url?: string;
-  };
-  analysis?: {
-    trend: string;
-    recommendation: string;
-    confidence: number;
-    signals: string[];
-  };
+
+  // Legacy (backwards compatibility) - single chart/analysis
+  chart?: ChartData;
+  analysis?: AnalysisData;
+
+  // NEW: Arrays for multiple charts per message
+  charts?: ChartData[];
+  analyses?: AnalysisData[];
+
   error?: string;
 }
 

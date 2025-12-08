@@ -62,6 +62,16 @@ import {
   uploadToS3ToolDefinition,
   UploadToS3InputSchema,
 } from './tools/upload-to-s3.js';
+import {
+  generateMultiTimeframeChartsTool,
+  generateMultiTimeframeChartsToolDefinition,
+  GenerateMultiTimeframeChartsInputSchema,
+} from './tools/generate-multi-timeframe-charts.js';
+import {
+  analyzeMultiTimeframeTool,
+  analyzeMultiTimeframeToolDefinition,
+  AnalyzeMultiTimeframeInputSchema,
+} from './tools/analyze-multi-timeframe.js';
 
 /**
  * Main server class
@@ -185,6 +195,22 @@ class ChartImgMCPServer {
             };
           }
 
+          case 'generate_multi_timeframe_charts': {
+            const validated = GenerateMultiTimeframeChartsInputSchema.parse(args);
+            const result = await generateMultiTimeframeChartsTool(validated);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+            };
+          }
+
+          case 'analyze_multi_timeframe': {
+            const validated = AnalyzeMultiTimeframeInputSchema.parse(args);
+            const result = await analyzeMultiTimeframeTool(validated);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+            };
+          }
+
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -271,6 +297,18 @@ class ChartImgMCPServer {
         inputSchema: uploadToS3ToolDefinition.inputSchema,
         annotations: uploadToS3ToolDefinition.annotations,
       },
+      {
+        name: generateMultiTimeframeChartsToolDefinition.name,
+        description: generateMultiTimeframeChartsToolDefinition.description,
+        inputSchema: generateMultiTimeframeChartsToolDefinition.inputSchema,
+        annotations: generateMultiTimeframeChartsToolDefinition.annotations,
+      },
+      {
+        name: analyzeMultiTimeframeToolDefinition.name,
+        description: analyzeMultiTimeframeToolDefinition.description,
+        inputSchema: analyzeMultiTimeframeToolDefinition.inputSchema,
+        annotations: analyzeMultiTimeframeToolDefinition.annotations,
+      },
     ];
   }
 
@@ -303,7 +341,7 @@ class ChartImgMCPServer {
     await this.server.connect(transport);
 
     console.error(`[MCP Server] ${this.config.mcp.serverName} v${this.config.mcp.serverVersion} started`);
-    console.error('[MCP Server] Registered 8 tools:');
+    console.error('[MCP Server] Registered 11 tools:');
     console.error('  1. health_check - Server health and status');
     console.error('  2. fetch_chart_documentation - Dynamic doc fetching');
     console.error('  3. get_exchanges - List available exchanges');
@@ -312,6 +350,9 @@ class ChartImgMCPServer {
     console.error('  6. validate_chart_config - Validate configuration');
     console.error('  7. generate_chart_image - Generate chart image');
     console.error('  8. save_chart_image - Save base64 image to disk');
+    console.error('  9. upload_chart_to_s3 - Upload to S3 storage');
+    console.error('  10. generate_multi_timeframe_charts - Parallel chart gen');
+    console.error('  11. analyze_multi_timeframe - Cascade MTF analysis');
     console.error('[MCP Server] Ready for requests via stdio');
   }
 }

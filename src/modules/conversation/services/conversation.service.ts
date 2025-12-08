@@ -23,6 +23,8 @@ import {
   ChatMessage,
   ToolCallRecord,
   Conversation,
+  ChartData,
+  AnalysisData,
 } from '../interfaces/conversation.interface';
 import { ContextManagerService } from './context-manager.service';
 import { createAssistantMessage, createToolCallRecord, completeToolCall, failToolCall } from '../domain/message';
@@ -350,8 +352,9 @@ export class ConversationService implements IConversationService {
 
       let fullText = '';
       const toolCalls: ToolCallRecord[] = [];
-      let chartData: SendMessageResponse['chart'] = undefined;
-      let analysisData: SendMessageResponse['analysis'] = undefined;
+      // Arrays to collect multiple charts/analyses per message
+      const chartsData: ChartData[] = [];
+      const analysesData: AnalysisData[] = [];
 
       // Send to Claude with streaming
       const response = await this.claudeProvider.sendMessage(
@@ -374,6 +377,14 @@ export class ConversationService implements IConversationService {
         }
       );
 
+      // Count total charts and analyses for index tracking
+      const toolBlocks = response.filter(b => b.type === 'tool_use');
+      const chartToolBlocks = toolBlocks.filter(b => (b as ClaudeToolUseBlock).name === 'generate_chart');
+      const analysisToolBlocks = toolBlocks.filter(b => (b as ClaudeToolUseBlock).name === 'analyze_chart');
+
+      let chartIndex = 0;
+      let analysisIndex = 0;
+
       // Process any tool calls in the response
       for (const block of response) {
         if (block.type === 'tool_use') {
@@ -383,21 +394,34 @@ export class ConversationService implements IConversationService {
             toolCalls
           );
 
-          // Extract chart/analysis data if applicable
+          // Extract chart data and push to array
           if (block.name === 'generate_chart' && toolResult) {
-            chartData = toolResult as SendMessageResponse['chart'];
+            const chartData = toolResult as ChartData;
+            chartsData.push(chartData);
             onEvent({
               event: 'chart_complete',
-              data: chartData,
+              data: {
+                index: chartIndex,
+                total: chartToolBlocks.length,
+                chart: chartData,
+              },
             });
+            chartIndex++;
           }
 
+          // Extract analysis data and push to array
           if (block.name === 'analyze_chart' && toolResult) {
-            analysisData = toolResult as SendMessageResponse['analysis'];
+            const analysisData = toolResult as AnalysisData;
+            analysesData.push(analysisData);
             onEvent({
               event: 'analysis_complete',
-              data: analysisData,
+              data: {
+                index: analysisIndex,
+                total: analysisToolBlocks.length,
+                analysis: analysisData,
+              },
             });
+            analysisIndex++;
           }
         }
       }
@@ -433,8 +457,8 @@ export class ConversationService implements IConversationService {
       }
 
       const message = createAssistantMessage(fullText, {
-        chartId: chartData ? uuidv4() : undefined,
-        analysisId: analysisData ? uuidv4() : undefined,
+        chartId: chartsData.length > 0 ? uuidv4() : undefined,
+        analysisId: analysesData.length > 0 ? uuidv4() : undefined,
         toolCalls,
       });
 
@@ -442,15 +466,19 @@ export class ConversationService implements IConversationService {
         success: true,
         message,
         conversationId,
-        chart: chartData,
-        analysis: analysisData,
+        // Legacy (backwards compatibility) - first chart/analysis
+        chart: chartsData[0],
+        analysis: analysesData[0],
+        // NEW: Arrays for multiple charts per message
+        charts: chartsData.length > 0 ? chartsData : undefined,
+        analyses: analysesData.length > 0 ? analysesData : undefined,
       };
 
-      // Persist assistant message
+      // Persist assistant message (use first chart for backwards compat)
       await this.persistAssistantMessage(
         conversationId,
         fullText,
-        chartData
+        chartsData[0]
       );
 
       // Emit complete event
@@ -703,8 +731,8 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
     history: ClaudeMessage[]
   ): Promise<SendMessageResponse> {
     const toolCalls: ToolCallRecord[] = [];
-    let chartData: SendMessageResponse['chart'] = undefined;
-    let analysisData: SendMessageResponse['analysis'] = undefined;
+    const chartsData: ChartData[] = [];
+    const analysesData: AnalysisData[] = [];
     let responseText = '';
 
     // Process each content block
@@ -723,10 +751,10 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
           Object.assign(toolCall, completeToolCall(toolCall, result));
 
           if (toolUse.name === 'generate_chart') {
-            chartData = result as SendMessageResponse['chart'];
+            chartsData.push(result as ChartData);
           }
           if (toolUse.name === 'analyze_chart') {
-            analysisData = result as SendMessageResponse['analysis'];
+            analysesData.push(result as AnalysisData);
           }
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Tool failed';
@@ -760,8 +788,8 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
     }
 
     const message = createAssistantMessage(responseText, {
-      chartId: chartData ? uuidv4() : undefined,
-      analysisId: analysisData ? uuidv4() : undefined,
+      chartId: chartsData.length > 0 ? uuidv4() : undefined,
+      analysisId: analysesData.length > 0 ? uuidv4() : undefined,
       toolCalls,
     });
 
@@ -769,8 +797,12 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
       success: true,
       message,
       conversationId,
-      chart: chartData,
-      analysis: analysisData,
+      // Legacy (backwards compatibility) - first chart/analysis
+      chart: chartsData[0],
+      analysis: analysesData[0],
+      // NEW: Arrays for multiple charts per message
+      charts: chartsData.length > 0 ? chartsData : undefined,
+      analyses: analysesData.length > 0 ? analysesData : undefined,
     };
   }
 }

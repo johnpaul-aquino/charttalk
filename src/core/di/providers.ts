@@ -11,8 +11,11 @@ import * as tokens from './tokens';
 import { ChartConfigService } from '../../modules/chart/services/chart-config.service';
 import { ChartValidationService } from '../../modules/chart/services/chart-validation.service';
 import { ChartGenerationService } from '../../modules/chart/services/chart-generation.service';
+import { ChartRegistryService } from '../../modules/chart/services/chart-registry.service';
+import { MultiTimeframeChartService } from '../../modules/chart/services/multi-timeframe-chart.service';
 import { IndicatorsRepository } from '../../modules/chart/repositories/indicators.repository';
 import { DrawingsRepository } from '../../modules/chart/repositories/drawings.repository';
+import { ChartRepository } from '../../modules/chart/repositories/chart.repository';
 
 // Storage Module
 import { ChartStorageService } from '../../modules/storage/services/chart-storage.service';
@@ -23,6 +26,7 @@ import { S3StorageService } from '../../modules/storage/services/s3-storage.serv
 // Analysis Module
 import { AIAnalysisService } from '../../modules/analysis/services/ai-analysis.service';
 import { SignalGenerationService } from '../../modules/analysis/services/signal-generation.service';
+import { MultiTimeframeAnalysisService } from '../../modules/analysis/services/multi-timeframe-analysis.service';
 import { OpenAIVisionProvider } from '../../modules/analysis/providers/openai-vision.provider';
 import { ClaudeProvider } from '../../modules/analysis/providers/claude.provider';
 import { ILLMProvider } from '../../modules/analysis/providers/llm-provider.interface';
@@ -90,6 +94,17 @@ export function registerProviders(container: DIContainer): void {
     return new DrawingsRepository();
   });
 
+  // ChartRepository (depends on Prisma client) - optional, only if DB configured
+  container.registerSingleton(tokens.CHART_REPOSITORY, (c) => {
+    try {
+      const prismaClient = c.resolve<PrismaClient>(tokens.PRISMA_CLIENT);
+      return new ChartRepository(prismaClient);
+    } catch {
+      console.warn('[DI] ChartRepository not available - DATABASE_URL not configured');
+      return undefined;
+    }
+  });
+
   // ============================================================
   // Chart Module - Services (singletons)
   // ============================================================
@@ -110,6 +125,39 @@ export function registerProviders(container: DIContainer): void {
   container.registerSingleton(tokens.CHART_GENERATION_SERVICE, (c) => {
     const client = c.resolve<ReturnType<typeof createChartImgClient>>(tokens.CHART_IMG_CLIENT);
     return new ChartGenerationService(client);
+  });
+
+  // ChartRegistryService (depends on ChartRepository - optional)
+  container.registerSingleton(tokens.CHART_REGISTRY_SERVICE, (c) => {
+    let chartRepository: ChartRepository | undefined;
+    try {
+      chartRepository = c.resolve<ChartRepository>(tokens.CHART_REPOSITORY);
+    } catch {
+      // ChartRepository not available - proceed without DB persistence
+    }
+    return new ChartRegistryService(chartRepository);
+  });
+
+  // MultiTimeframeChartService (depends on config, generation, registry, S3 services)
+  container.registerSingleton(tokens.MULTI_TIMEFRAME_CHART_SERVICE, (c) => {
+    const chartConfigService = c.resolve<ChartConfigService>(tokens.CHART_CONFIG_SERVICE);
+    const chartGenerationService = c.resolve<ChartGenerationService>(tokens.CHART_GENERATION_SERVICE);
+    const chartRegistryService = c.resolve<ChartRegistryService>(tokens.CHART_REGISTRY_SERVICE);
+
+    // S3 storage is optional
+    let s3StorageService: S3StorageService | undefined;
+    try {
+      s3StorageService = c.resolve<S3StorageService>(tokens.S3_STORAGE_SERVICE);
+    } catch {
+      console.warn('[DI] S3StorageService not available for MultiTimeframeChartService');
+    }
+
+    return new MultiTimeframeChartService(
+      chartConfigService,
+      chartGenerationService,
+      chartRegistryService,
+      s3StorageService
+    );
   });
 
   // ============================================================
@@ -178,6 +226,15 @@ export function registerProviders(container: DIContainer): void {
       tokens.SIGNAL_GENERATION_SERVICE
     );
     return new AIAnalysisService(llmProvider, signalGenerator);
+  });
+
+  // MultiTimeframeAnalysisService (depends on Claude provider and signal generation service)
+  container.registerSingleton(tokens.MULTI_TIMEFRAME_ANALYSIS_SERVICE, (c) => {
+    const claudeProvider = c.resolve<ClaudeProvider>(tokens.CLAUDE_PROVIDER);
+    const signalGenerator = c.resolve<SignalGenerationService>(
+      tokens.SIGNAL_GENERATION_SERVICE
+    );
+    return new MultiTimeframeAnalysisService(claudeProvider, signalGenerator);
   });
 
   // ============================================================

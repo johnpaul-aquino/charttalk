@@ -34,11 +34,14 @@ model Message {
   role           String       @db.VarChar(20) // 'user' | 'assistant'
   content        String       @db.Text
 
-  // Chart reference (if message generated a chart)
+  // Legacy: Single chart reference (kept for backward compatibility)
   chartId        String?      @map("chart_id")
   chartUrl       String?      @map("chart_url") @db.VarChar(2000)
   chartSymbol    String?      @map("chart_symbol") @db.VarChar(50)
   chartInterval  String?      @map("chart_interval") @db.VarChar(10)
+
+  // Multi-timeframe analysis result (JSON)
+  mtfAnalysis    Json?        @map("mtf_analysis")
 
   // Token tracking for cost analysis
   tokensUsed     Int?         @map("tokens_used")
@@ -46,7 +49,36 @@ model Message {
   createdAt      DateTime     @default(now()) @map("created_at")
 
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  charts         Chart[]      // Multiple charts for multi-timeframe analysis
 
   @@index([conversationId, createdAt])
   @@map("messages")
+}
+
+/// Chart generated for analysis (supports multi-timeframe)
+model Chart {
+  id             String       @id @default(uuid())
+  messageId      String       @map("message_id")
+  requestId      String       @map("request_id")
+
+  // Chart identification
+  symbol         String       @db.VarChar(50)  // e.g., 'BINANCE:BTCUSDT'
+  interval       String       @db.VarChar(10)  // e.g., '4h', '1D'
+  role           String?      @db.VarChar(10)  // 'htf' | 'etf' | 'ltf'
+
+  // Image URLs
+  imageUrl       String       @map("image_url") @db.VarChar(2000)
+  s3Url          String?      @map("s3_url") @db.VarChar(2000)
+
+  // Chart configuration (JSON)
+  indicators     Json?        // Array of indicator names
+  config         Json?        // Full ChartConfig object
+
+  generatedAt    DateTime     @default(now()) @map("generated_at")
+
+  message        Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([requestId])
+  @@map("charts")
 }
