@@ -72,9 +72,9 @@ export class ChartConfigService implements IChartConfigService {
       // 5. Detect Chart Style
       const style = this.detectChartStyle(nl);
 
-      // 6. Parse Resolution
-      let width = 1200;
-      let height = 675;
+      // 6. Parse Resolution (optimized for token-efficient AI analysis)
+      let width = 800;
+      let height = 450;
       if (preferences?.resolution) {
         const parsed = this.parseResolution(preferences.resolution);
         width = parsed.width;
@@ -128,6 +128,19 @@ export class ChartConfigService implements IChartConfigService {
   ): { symbol: string; exchange: string; fullSymbol: string } | null {
     const nl = text.toLowerCase();
 
+    // First, check for explicit EXCHANGE:SYMBOL format (e.g., "BINANCE:BTCUSDT", "FX:XAUUSD")
+    const explicitSymbolMatch = text.match(/\b([A-Z0-9_]+):([A-Z0-9]+)\b/i);
+    if (explicitSymbolMatch) {
+      const exchange = explicitSymbolMatch[1].toUpperCase();
+      const symbol = explicitSymbolMatch[2].toUpperCase();
+      console.log(`[ChartConfigService] Detected explicit symbol format: ${exchange}:${symbol}`);
+      return {
+        symbol,
+        exchange: preferredExchange || exchange,
+        fullSymbol: `${preferredExchange || exchange}:${symbol}`,
+      };
+    }
+
     // Common crypto mappings
     const cryptoMappings: Record<string, { symbol: string; exchange: string }> = {
       bitcoin: { symbol: 'BTCUSDT', exchange: 'BINANCE' },
@@ -178,6 +191,16 @@ export class ChartConfigService implements IChartConfigService {
       'gbpusd': { symbol: 'GBPUSD', exchange: 'FX' },
       'usd/jpy': { symbol: 'USDJPY', exchange: 'FX' },
       'usdjpy': { symbol: 'USDJPY', exchange: 'FX' },
+      // Gold
+      'gold': { symbol: 'XAUUSD', exchange: 'FX' },
+      'xau': { symbol: 'XAUUSD', exchange: 'FX' },
+      'xau/usd': { symbol: 'XAUUSD', exchange: 'FX' },
+      'xauusd': { symbol: 'XAUUSD', exchange: 'FX' },
+      // Silver
+      'silver': { symbol: 'XAGUSD', exchange: 'FX' },
+      'xag': { symbol: 'XAGUSD', exchange: 'FX' },
+      'xag/usd': { symbol: 'XAGUSD', exchange: 'FX' },
+      'xagusd': { symbol: 'XAGUSD', exchange: 'FX' },
     };
 
     // Check crypto

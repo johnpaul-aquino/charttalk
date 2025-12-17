@@ -102,6 +102,10 @@ export interface SendMessageResponse {
   charts?: ChartData[];
   analyses?: AnalysisData[];
 
+  // URLs of charts embedded in markdown response
+  // Frontend should hide chart cards for these URLs to avoid duplication
+  embeddedChartUrls?: string[];
+
   error?: string;
 }
 

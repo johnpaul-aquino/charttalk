@@ -462,16 +462,29 @@ export class ConversationService implements IConversationService {
         toolCalls,
       });
 
+      // Identify charts that are embedded in the markdown response
+      // This helps frontend avoid duplicate display (markdown images + chart cards)
+      const embeddedChartUrls = chartsData
+        .filter((chart) => fullText.includes(chart.imageUrl))
+        .map((chart) => chart.imageUrl);
+
+      // Filter out charts that are already embedded in the markdown response
+      const chartsNotInMarkdown = chartsData.filter(
+        (chart) => !fullText.includes(chart.imageUrl)
+      );
+
       const result: SendMessageResponse = {
         success: true,
         message,
         conversationId,
-        // Legacy (backwards compatibility) - first chart/analysis
-        chart: chartsData[0],
+        // Legacy (backwards compatibility) - first chart/analysis (only if not in markdown)
+        chart: chartsNotInMarkdown[0],
         analysis: analysesData[0],
-        // NEW: Arrays for multiple charts per message
-        charts: chartsData.length > 0 ? chartsData : undefined,
+        // Only include charts that aren't already embedded in markdown
+        charts: chartsNotInMarkdown.length > 0 ? chartsNotInMarkdown : undefined,
         analyses: analysesData.length > 0 ? analysesData : undefined,
+        // URLs of charts embedded in markdown - frontend should hide these chart cards
+        embeddedChartUrls: embeddedChartUrls.length > 0 ? embeddedChartUrls : undefined,
       };
 
       // Persist assistant message (use first chart for backwards compat)
@@ -638,10 +651,10 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
 
       console.log('[ConversationService] Generating chart:', { symbol, interval, range, indicators, theme });
 
-      // Build chart config
+      // Build chart config - IMPORTANT: pass symbol in preferences to ensure it's used directly
       const config = await this.chartConfigService.constructFromNaturalLanguage(
         `${symbol} chart with ${indicators.join(', ')} for the last ${range}`,
-        { theme: theme as 'light' | 'dark', interval, range }
+        { symbol, theme: theme as 'light' | 'dark', interval, range }
       );
 
       console.log('[ConversationService] Chart config:', JSON.stringify(config.config, null, 2));
@@ -793,16 +806,28 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
       toolCalls,
     });
 
+    // Identify charts that are embedded in the markdown response
+    const embeddedChartUrls = chartsData
+      .filter((chart) => responseText.includes(chart.imageUrl))
+      .map((chart) => chart.imageUrl);
+
+    // Filter out charts that are already embedded in the markdown response
+    const chartsNotInMarkdown = chartsData.filter(
+      (chart) => !responseText.includes(chart.imageUrl)
+    );
+
     return {
       success: true,
       message,
       conversationId,
-      // Legacy (backwards compatibility) - first chart/analysis
-      chart: chartsData[0],
+      // Legacy (backwards compatibility) - first chart/analysis (only if not in markdown)
+      chart: chartsNotInMarkdown[0],
       analysis: analysesData[0],
-      // NEW: Arrays for multiple charts per message
-      charts: chartsData.length > 0 ? chartsData : undefined,
+      // Only include charts that aren't already embedded in markdown
+      charts: chartsNotInMarkdown.length > 0 ? chartsNotInMarkdown : undefined,
       analyses: analysesData.length > 0 ? analysesData : undefined,
+      // URLs of charts embedded in markdown - frontend should hide these chart cards
+      embeddedChartUrls: embeddedChartUrls.length > 0 ? embeddedChartUrls : undefined,
     };
   }
 }

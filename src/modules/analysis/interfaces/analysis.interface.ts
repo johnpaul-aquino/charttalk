@@ -17,6 +17,8 @@ export interface AnalysisOptions {
   includeRiskManagement?: boolean;
   tradingStyle?: 'day_trading' | 'swing_trading' | 'scalping';
   confidenceThreshold?: number;
+  /** Image detail level for AI analysis. 'auto' lets the model decide, 'low' saves tokens, 'high' for detailed analysis */
+  detail?: 'high' | 'low' | 'auto';
 }
 
 export interface AnalysisResult {

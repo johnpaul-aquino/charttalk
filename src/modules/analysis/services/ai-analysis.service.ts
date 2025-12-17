@@ -137,12 +137,14 @@ export class AIAnalysisService implements IAIAnalysisService {
       const systemPrompt = `You are an expert technical analyst with 15+ years of experience in trading ${request.symbol} on ${request.interval} timeframe. You provide accurate, actionable analysis based on chart patterns, technical indicators, and price action. Always include specific price levels in your analysis.`;
 
       // Call LLM provider
+      // Use configurable detail level: 'auto' by default for token efficiency, 'high' for detailed analysis
+      const detailLevel = request.options?.detail || 'auto';
       const analysisText = await this.llmProvider.analyzeImage(
         imageInput,
         prompt,
         {
           systemPrompt,
-          detail: 'high', // Use high detail for accurate chart reading
+          detail: detailLevel,
           maxTokens: 2000,
           temperature: 0.7,
         }
