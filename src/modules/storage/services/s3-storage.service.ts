@@ -13,7 +13,7 @@ import type {
 } from '../interfaces/storage.interface';
 import { createHash } from 'crypto';
 import { promises as fs } from 'fs';
-import fetch from 'node-fetch';
+import { fetchWithTimeout, DEFAULT_TIMEOUTS } from '@/shared/utils';
 
 export class S3StorageService implements ICloudStorageService {
   constructor(private s3Client: S3ClientService) {}
@@ -26,8 +26,10 @@ export class S3StorageService implements ICloudStorageService {
     metadata?: ChartMetadata
   ): Promise<S3UploadResult> {
     try {
-      // Download chart from URL
-      const response = await fetch(chartUrl);
+      // Download chart from URL with timeout protection
+      const response = await fetchWithTimeout(chartUrl, {
+        timeout: DEFAULT_TIMEOUTS.DOWNLOAD,
+      });
 
       if (!response.ok) {
         return {

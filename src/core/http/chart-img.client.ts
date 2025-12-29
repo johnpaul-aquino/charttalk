@@ -2,13 +2,13 @@
  * chart-img.com API Client
  *
  * HTTP client wrapper for interacting with chart-img.com REST API.
- * Handles authentication, rate limiting, retries, and error handling.
+ * Handles authentication, rate limiting, retries, timeout protection, and error handling.
  */
 
-import fetch from 'node-fetch';
 import fs from 'fs/promises';
 import { pipeline } from 'stream/promises';
 import { createWriteStream } from 'fs';
+import { fetchWithTimeout, FetchTimeoutError, DEFAULT_TIMEOUTS } from '../../shared/utils';
 
 // Type Definitions
 
@@ -219,13 +219,14 @@ export class ChartImgClient {
 
     try {
       const response = await this.retryWithBackoff(async () => {
-        return await fetch(`${this.baseUrl}${endpoint}`, {
+        return await fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-api-key': this.apiKey,
           },
           body: JSON.stringify(config),
+          timeout: DEFAULT_TIMEOUTS.CHART_GENERATION,
         });
       });
 
@@ -319,13 +320,14 @@ export class ChartImgClient {
 
     try {
       const response = await this.retryWithBackoff(async () => {
-        return await fetch(`${this.baseUrl}${endpoint}`, {
+        return await fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-api-key': this.apiKey,
           },
           body: JSON.stringify(config),
+          timeout: DEFAULT_TIMEOUTS.CHART_GENERATION,
         });
       });
 
@@ -420,8 +422,9 @@ export class ChartImgClient {
 
     try {
       const response = await this.retryWithBackoff(async () => {
-        return await fetch(`${this.baseUrl}/v3/tradingview/exchanges`, {
+        return await fetchWithTimeout(`${this.baseUrl}/v3/tradingview/exchanges`, {
           headers: { 'x-api-key': this.apiKey },
+          timeout: DEFAULT_TIMEOUTS.EXCHANGES,
         });
       });
 
@@ -497,9 +500,12 @@ export class ChartImgClient {
 
     try {
       const response = await this.retryWithBackoff(async () => {
-        return await fetch(
+        return await fetchWithTimeout(
           `${this.baseUrl}/v3/tradingview/exchange/${exchange}/symbols`,
-          { headers: { 'x-api-key': this.apiKey } }
+          {
+            headers: { 'x-api-key': this.apiKey },
+            timeout: DEFAULT_TIMEOUTS.SYMBOLS,
+          }
         );
       });
 
@@ -568,6 +574,15 @@ export class ChartImgClient {
 
   /**
    * Retry logic with exponential backoff
+   *
+   * Retries on:
+   * - Timeout errors (FetchTimeoutError)
+   * - 429 rate limit errors
+   * - 5xx server errors
+   * - Network errors
+   *
+   * Does NOT retry on:
+   * - 4xx client errors (except 429)
    */
   private async retryWithBackoff<T>(
     fn: () => Promise<T>,
@@ -581,6 +596,16 @@ export class ChartImgClient {
         return await fn();
       } catch (error: any) {
         lastError = error;
+
+        // Timeout errors should be retried
+        if (error instanceof FetchTimeoutError) {
+          console.warn(`[ChartImgClient] Request timed out (attempt ${i + 1}/${maxRetries}): ${error.message}`);
+          if (i < maxRetries - 1) {
+            const delay = baseDelay * Math.pow(2, i);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+        }
 
         // Don't retry on 4xx errors (except 429)
         if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 429) {

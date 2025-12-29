@@ -1,23 +1,25 @@
 /**
  * Download Service
  *
- * Service for downloading files from URLs
+ * Service for downloading files from URLs with timeout protection
  */
 
 import fs from 'fs/promises';
 import { createWriteStream } from 'fs';
 import { pipeline } from 'stream/promises';
-import fetch from 'node-fetch';
 import path from 'path';
 import type { IDownloadService, DownloadResult } from '../interfaces/storage.interface';
+import { fetchWithTimeout, DEFAULT_TIMEOUTS } from '@/shared/utils';
 
 export class DownloadService implements IDownloadService {
   /**
-   * Download file from URL to destination path
+   * Download file from URL to destination path with timeout protection
    */
   async downloadFile(url: string, destPath: string): Promise<DownloadResult> {
     try {
-      const response = await fetch(url);
+      const response = await fetchWithTimeout(url, {
+        timeout: DEFAULT_TIMEOUTS.DOWNLOAD,
+      });
 
       if (!response.ok) {
         return {

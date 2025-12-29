@@ -5,9 +5,9 @@
  * Extracts indicators, parameters, constraints, and examples.
  */
 
-import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import { getAllIndicators } from '../../lib/indicators-loader';
+import { fetchWithTimeout, DEFAULT_TIMEOUTS } from '../../shared/utils';
 
 // Type Definitions
 
@@ -88,9 +88,11 @@ export async function fetchDocumentation(
     return extractSection(documentationCache.data, section);
   }
 
-  // Fetch documentation
+  // Fetch documentation with timeout protection
   const docUrl = 'https://doc.chart-img.com';
-  const response = await fetch(docUrl);
+  const response = await fetchWithTimeout(docUrl, {
+    timeout: DEFAULT_TIMEOUTS.DOCUMENTATION,
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch documentation: ${response.statusText}`);

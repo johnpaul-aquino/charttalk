@@ -51,6 +51,20 @@ export interface ChartGenerationResult {
     rateLimitReset?: number;
   };
   error?: string;
+  // Per-user rate limit info
+  rateLimit?: {
+    remaining: number;
+    limit: number;
+    resetsAt: string;
+  };
+}
+
+/**
+ * User context for rate limiting
+ */
+export interface ChartUserContext {
+  userId: string;
+  plan: 'free' | 'pro' | 'max' | null;
 }
 
 export interface ChartConfigConstructionResult {
@@ -88,13 +102,15 @@ export interface IChartGenerationService {
   generateChart(
     config: ChartConfig,
     storage?: boolean,
-    format?: 'png' | 'jpeg'
+    format?: 'png' | 'jpeg',
+    userContext?: ChartUserContext
   ): Promise<ChartGenerationResult>;
 
   generateChartToFile(
     config: ChartConfig,
     filePath: string,
-    format?: 'png' | 'jpeg'
+    format?: 'png' | 'jpeg',
+    userContext?: ChartUserContext
   ): Promise<ChartGenerationResult>;
 }
 

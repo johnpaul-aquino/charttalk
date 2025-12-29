@@ -9,6 +9,7 @@
 
 // Services
 export { JWTService } from './services/jwt.service';
+export { UserRateLimitService } from './services/user-rate-limit.service';
 
 // Types - JWT payload and verification result
 export type {
@@ -18,6 +19,12 @@ export type {
   PlanType,
   SubscriptionStatus,
 } from './services/jwt.service';
+
+// Types - Rate limiting
+export type {
+  RateLimitResult,
+  RateLimitInfo,
+} from './services/user-rate-limit.service';
 
 // Future exports (to be added when implementing full user management)
 // export * from './interfaces/user.interface';

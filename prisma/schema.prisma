@@ -82,3 +82,15 @@ model Chart {
   @@index([requestId])
   @@map("charts")
 }
+
+/// User rate limiting for chart generation
+/// Tracks daily chart usage per user with midnight UTC reset
+model UserRateLimit {
+  id         String   @id @default(uuid())
+  userId     String   @unique @map("user_id")
+  dailyCount Int      @default(0) @map("daily_count")
+  lastReset  DateTime @default(now()) @map("last_reset")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("user_rate_limits")
+}

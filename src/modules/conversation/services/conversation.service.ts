@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   ClaudeProvider,
   ClaudeMessage,
+  ClaudeContent,
   ClaudeContentBlock,
   ClaudeTextBlock,
   ClaudeToolUseBlock,
@@ -62,6 +63,12 @@ export class ConversationService implements IConversationService {
     imageUrl: string;
     symbol: string;
     interval: string;
+  } | null = null;
+
+  // Current user context for rate limiting (set per request)
+  private currentUserContext: {
+    userId: string;
+    plan: 'free' | 'pro' | 'max' | null;
   } | null = null;
 
   /**
@@ -195,6 +202,11 @@ export class ConversationService implements IConversationService {
    * Send a message and get AI response
    */
   async sendMessage(request: SendMessageRequest): Promise<SendMessageResponse> {
+    // Set user context for rate limiting (available during tool execution)
+    this.currentUserContext = request.userId
+      ? { userId: request.userId, plan: request.plan || null }
+      : null;
+
     try {
       // Get or create conversation if persistence is enabled
       let conversationId = request.conversationId;
@@ -290,6 +302,11 @@ export class ConversationService implements IConversationService {
   ): Promise<SendMessageResponse> {
     // Reset chart context for each new conversation turn (will be populated from history if available)
     this.lastGeneratedChart = null;
+
+    // Set user context for rate limiting (available during tool execution)
+    this.currentUserContext = request.userId
+      ? { userId: request.userId, plan: request.plan || null }
+      : null;
 
     // Get or create conversation if persistence is enabled
     let conversationId = request.conversationId;
@@ -427,32 +444,79 @@ export class ConversationService implements IConversationService {
       }
 
       // If there were tool calls, continue the conversation with results
+      // Loop to handle multiple rounds of tool calls (e.g., generate_chart -> analyze_chart)
       if (toolCalls.length > 0) {
-        const toolResults = toolCalls.map((tc) => ({
-          type: 'tool_result' as const,
-          tool_use_id: tc.id,
-          content: JSON.stringify(tc.output),
-        }));
+        let currentAssistantResponse = response;
+        let pendingToolCalls = [...toolCalls];
+        const maxRounds = 5; // Safety limit to prevent infinite loops
+        let round = 0;
 
-        // Get final response after tool use
-        // Pass the original response (with tool_use blocks) to maintain proper message sequence
-        const finalResponse = await this.claudeProvider.continueWithToolResult(
-          truncatedHistory,
-          response, // The assistant's tool_use response
-          toolResults,
-          { systemPrompt: this.contextManager.getSystemPrompt() },
-          tools,
-          (chunk: string) => {
-            fullText += chunk;
-            onEvent({ event: 'chunk', data: { text: chunk } });
-          }
-        );
+        while (pendingToolCalls.length > 0 && round < maxRounds) {
+          round++;
+          console.log(`[ConversationService] Tool call round ${round}, processing ${pendingToolCalls.length} tool calls`);
 
-        // Extract final text
-        for (const block of finalResponse) {
-          if (block.type === 'text') {
-            fullText = (block as ClaudeTextBlock).text;
+          const toolResults = pendingToolCalls.map((tc) => ({
+            type: 'tool_result' as const,
+            tool_use_id: tc.id,
+            content: JSON.stringify(tc.output),
+          }));
+
+          // Get next response after tool use
+          const nextResponse = await this.claudeProvider.continueWithToolResult(
+            truncatedHistory,
+            currentAssistantResponse,
+            toolResults,
+            { systemPrompt: this.contextManager.getSystemPrompt() },
+            tools,
+            (chunk: string) => {
+              fullText += chunk;
+              onEvent({ event: 'chunk', data: { text: chunk } });
+            }
+          );
+
+          // Process the response - look for new tool calls or text
+          pendingToolCalls = [];
+          for (const block of nextResponse) {
+            if (block.type === 'tool_use') {
+              // New tool call - execute it
+              const toolResult = await this.executeToolCallWithEvents(
+                block as ClaudeToolUseBlock,
+                onEvent,
+                pendingToolCalls
+              );
+
+              // Handle chart/analysis results
+              if (block.name === 'generate_chart' && toolResult) {
+                const chartData = toolResult as ChartData;
+                chartsData.push(chartData);
+                onEvent({
+                  event: 'chart_complete',
+                  data: { index: chartIndex++, total: 0, chart: chartData },
+                });
+              }
+              if (block.name === 'analyze_chart' && toolResult) {
+                const analysisData = toolResult as AnalysisData;
+                analysesData.push(analysisData);
+                onEvent({
+                  event: 'analysis_complete',
+                  data: { index: analysisIndex++, total: 0, analysis: analysisData },
+                });
+              }
+            } else if (block.type === 'text') {
+              // Extract text (fallback in case streaming missed it)
+              const text = (block as ClaudeTextBlock).text;
+              if (text && !fullText.includes(text)) {
+                fullText = fullText ? fullText + '\n' + text : text;
+              }
+            }
           }
+
+          // Update for next iteration
+          currentAssistantResponse = nextResponse;
+        }
+
+        if (round >= maxRounds) {
+          console.warn(`[ConversationService] Hit max tool call rounds (${maxRounds})`);
         }
       }
 
@@ -659,11 +723,12 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
 
       console.log('[ConversationService] Chart config:', JSON.stringify(config.config, null, 2));
 
-      // Generate chart
+      // Generate chart (pass user context for per-user rate limiting)
       const result = await this.chartGenerationService.generateChart(
         config.config,
         true, // storage
-        'png' // format
+        'png', // format
+        this.currentUserContext || undefined
       );
 
       console.log('[ConversationService] Chart generation result:', { success: result.success, error: result.error, imageUrl: result.imageUrl });
@@ -777,26 +842,68 @@ Returns: Technical analysis, trend, signals, and recommended entry/exit levels`,
     }
 
     // If there were tool calls, continue the conversation
+    // Loop to handle multiple rounds of tool calls (e.g., generate_chart -> analyze_chart)
     if (toolCalls.length > 0) {
-      const toolResults = toolCalls.map((tc) => ({
-        type: 'tool_result' as const,
-        tool_use_id: tc.id,
-        content: JSON.stringify(tc.output || tc.error),
-      }));
+      let currentAssistantResponse = response;
+      let pendingToolCalls = [...toolCalls];
+      const maxRounds = 5; // Safety limit to prevent infinite loops
+      let round = 0;
 
-      // Pass the original assistant response (with tool_use blocks) to maintain proper message sequence
-      const finalResponse = await this.claudeProvider.continueWithToolResult(
-        history,
-        response, // The assistant's tool_use response
-        toolResults,
-        { systemPrompt: this.contextManager.getSystemPrompt() }
-      );
+      while (pendingToolCalls.length > 0 && round < maxRounds) {
+        round++;
+        console.log(`[ConversationService] Non-streaming tool call round ${round}, processing ${pendingToolCalls.length} tool calls`);
 
-      // Extract final text
-      for (const block of finalResponse) {
-        if (block.type === 'text') {
-          responseText = (block as ClaudeTextBlock).text;
+        const toolResults = pendingToolCalls.map((tc) => ({
+          type: 'tool_result' as const,
+          tool_use_id: tc.id,
+          content: JSON.stringify(tc.output || tc.error),
+        }));
+
+        // Get next response after tool use
+        const nextResponse = await this.claudeProvider.continueWithToolResult(
+          history,
+          currentAssistantResponse,
+          toolResults,
+          { systemPrompt: this.contextManager.getSystemPrompt() }
+        );
+
+        // Process the response - look for new tool calls or text
+        pendingToolCalls = [];
+        for (const block of nextResponse) {
+          if (block.type === 'tool_use') {
+            // New tool call - execute it
+            const toolUse = block as ClaudeToolUseBlock;
+            const toolCall = createToolCallRecord(toolUse.id, toolUse.name, toolUse.input);
+            toolCalls.push(toolCall);
+            pendingToolCalls.push(toolCall);
+
+            try {
+              const result = await this.executeToolCall(toolUse.name, toolUse.input);
+              Object.assign(toolCall, completeToolCall(toolCall, result));
+
+              if (toolUse.name === 'generate_chart') {
+                chartsData.push(result as ChartData);
+              }
+              if (toolUse.name === 'analyze_chart') {
+                analysesData.push(result as AnalysisData);
+              }
+            } catch (error) {
+              const errorMessage = error instanceof Error ? error.message : 'Tool failed';
+              Object.assign(toolCall, failToolCall(toolCall, errorMessage));
+            }
+          } else if (block.type === 'text') {
+            // Extract text - append to accumulated text
+            const text = (block as ClaudeTextBlock).text;
+            responseText = responseText ? responseText + '\n' + text : text;
+          }
         }
+
+        // Update for next iteration
+        currentAssistantResponse = nextResponse;
+      }
+
+      if (round >= maxRounds) {
+        console.warn(`[ConversationService] Non-streaming hit max tool call rounds (${maxRounds})`);
       }
     }
 

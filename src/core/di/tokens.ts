@@ -39,6 +39,7 @@ export const CONVERSATION_REPOSITORY = Symbol('CONVERSATION_REPOSITORY');
 
 // User Module Services
 export const JWT_SERVICE = Symbol('JWT_SERVICE');
+export const USER_RATE_LIMIT_SERVICE = Symbol('USER_RATE_LIMIT_SERVICE');
 
 // Database
 export const PRISMA_CLIENT = Symbol('PRISMA_CLIENT');

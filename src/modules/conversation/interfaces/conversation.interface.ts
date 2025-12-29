@@ -60,6 +60,7 @@ export interface ToolCallRecord {
 export interface SendMessageRequest {
   message: string;
   userId: string;
+  plan?: 'free' | 'pro' | 'max' | null;
   conversationId?: string;
   conversationHistory?: ChatMessage[];
 }

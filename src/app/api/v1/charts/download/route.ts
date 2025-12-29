@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { fetchWithTimeout, DEFAULT_TIMEOUTS } from '@/shared/utils';
 
 /**
  * Allowed URL prefixes for security
@@ -78,11 +79,12 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Fetch the image from chart-img.com
-    const response = await fetch(url, {
+    // Fetch the image from chart-img.com with timeout protection
+    const response = await fetchWithTimeout(url, {
       headers: {
         'User-Agent': 'ChartTalk-Proxy/1.0',
       },
+      timeout: DEFAULT_TIMEOUTS.DOWNLOAD,
     });
 
     if (!response.ok) {

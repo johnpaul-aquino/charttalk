@@ -36,16 +36,17 @@ export class ChatController {
    * Send a message (non-streaming)
    * POST /api/v1/chat/messages
    */
-  async sendMessage(request: SendMessageRequestDTO & { userId: string }): Promise<SendMessageResponseDTO> {
+  async sendMessage(request: SendMessageRequestDTO & { userId: string; plan?: 'free' | 'pro' | 'max' | null }): Promise<SendMessageResponseDTO> {
     // Convert conversation history from DTO to domain model
     const conversationHistory: ChatMessage[] = request.conversationHistory?.map(
       (msg) => this.convertDTOToMessage(msg)
     ) || [];
 
-    // Send message
+    // Send message with user context for rate limiting
     const response = await this.conversationService.sendMessage({
       message: request.message,
       userId: request.userId,
+      plan: request.plan,
       conversationId: request.conversationId,
       conversationHistory,
     });
@@ -65,7 +66,7 @@ export class ChatController {
    * Send a message with streaming response
    * POST /api/v1/chat/messages/stream
    */
-  async sendMessageStream(request: SendMessageRequestDTO & { userId: string }): Promise<ReadableStream> {
+  async sendMessageStream(request: SendMessageRequestDTO & { userId: string; plan?: 'free' | 'pro' | 'max' | null }): Promise<ReadableStream> {
     // Convert conversation history from DTO to domain model
     const conversationHistory: ChatMessage[] = request.conversationHistory?.map(
       (msg) => this.convertDTOToMessage(msg)
@@ -77,6 +78,7 @@ export class ChatController {
         {
           message: request.message,
           userId: request.userId,
+          plan: request.plan,
           conversationId: request.conversationId,
           conversationHistory,
         },

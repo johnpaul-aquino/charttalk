@@ -155,6 +155,7 @@ export class ChartValidationService implements IChartValidationService {
       BASIC: { maxWidth: 800, maxHeight: 600 },
       PRO: { maxWidth: 1920, maxHeight: 1080 },
       MEGA: { maxWidth: 1920, maxHeight: 1600 },
+      MAX: { maxWidth: 2048, maxHeight: 1920 },
       ULTRA: { maxWidth: 2048, maxHeight: 1920 },
       ENTERPRISE: { maxWidth: 2048, maxHeight: 1920 },
     };
@@ -180,6 +181,7 @@ export class ChartValidationService implements IChartValidationService {
       BASIC: 3,
       PRO: 5,
       MEGA: 10,
+      MAX: 10,
       ULTRA: 25,
       ENTERPRISE: 50,
     };
@@ -205,6 +207,7 @@ export class ChartValidationService implements IChartValidationService {
       BASIC: 5,
       PRO: 10,
       MEGA: 20,
+      MAX: 20,
       ULTRA: 50,
       ENTERPRISE: 100,
     };

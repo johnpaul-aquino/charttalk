@@ -43,10 +43,11 @@ async function handler(req: NextRequest, context?: { auth?: AuthContext }): Prom
     // Get controller from DI container
     const controller = getChatController();
 
-    // Send message with userId from JWT
+    // Send message with userId and plan from JWT
     const response = await controller.sendMessage({
       ...parseResult.data,
       userId: auth.userId,
+      plan: auth.plan,
     });
 
     if (!response.success) {

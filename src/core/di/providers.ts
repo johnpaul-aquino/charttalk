@@ -39,6 +39,7 @@ import { IConversationRepository } from '../../modules/conversation/interfaces/c
 
 // User Module
 import { JWTService } from '../../modules/user/services/jwt.service';
+import { UserRateLimitService } from '../../modules/user/services/user-rate-limit.service';
 
 // Database
 import { prisma, getPrismaClient } from '../database/prisma.client';
@@ -82,6 +83,17 @@ export function registerProviders(container: DIContainer): void {
     return new JWTService();
   });
 
+  // User Rate Limit Service (depends on Prisma)
+  container.registerSingleton(tokens.USER_RATE_LIMIT_SERVICE, (c) => {
+    try {
+      const prismaClient = c.resolve<PrismaClient>(tokens.PRISMA_CLIENT);
+      return new UserRateLimitService(prismaClient);
+    } catch {
+      console.warn('[DI] UserRateLimitService not available - DATABASE_URL not configured');
+      return undefined;
+    }
+  });
+
   // ============================================================
   // Chart Module - Repositories (singletons)
   // ============================================================
@@ -121,10 +133,22 @@ export function registerProviders(container: DIContainer): void {
     return new ChartValidationService();
   });
 
-  // ChartGenerationService (depends on ChartImgClient)
+  // ChartGenerationService (depends on ChartImgClient, optionally UserRateLimitService)
   container.registerSingleton(tokens.CHART_GENERATION_SERVICE, (c) => {
     const client = c.resolve<ReturnType<typeof createChartImgClient>>(tokens.CHART_IMG_CLIENT);
-    return new ChartGenerationService(client);
+    const service = new ChartGenerationService(client);
+
+    // Inject rate limit service if available
+    try {
+      const rateLimitService = c.resolve<UserRateLimitService>(tokens.USER_RATE_LIMIT_SERVICE);
+      if (rateLimitService) {
+        service.setRateLimitService(rateLimitService);
+      }
+    } catch {
+      console.warn('[DI] UserRateLimitService not available - per-user rate limiting disabled');
+    }
+
+    return service;
   });
 
   // ChartRegistryService (depends on ChartRepository - optional)

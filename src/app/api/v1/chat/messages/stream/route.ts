@@ -41,7 +41,7 @@ const VALID_SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['active', 'trialing']
  * Auth validation result
  */
 type AuthResult =
-  | { valid: true; userId: string }
+  | { valid: true; userId: string; plan: PlanType }
   | { valid: false; code: string; message: string };
 
 /**
@@ -65,7 +65,7 @@ function validateAuthAndPlan(req: NextRequest): AuthResult {
     process.env.AUTH_DEV_BYPASS === 'true' &&
     !token
   ) {
-    return { valid: true, userId: 'dev-user' };
+    return { valid: true, userId: 'dev-user', plan: 'pro' };
   }
 
   if (!token) {
@@ -97,7 +97,7 @@ function validateAuthAndPlan(req: NextRequest): AuthResult {
     };
   }
 
-  return { valid: true, userId: result.user.userId };
+  return { valid: true, userId: result.user.userId, plan: result.user.plan };
 }
 
 /**
@@ -157,10 +157,11 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Get controller from DI container
     const chatController = getChatController();
 
-    // Create streaming response with userId from JWT
+    // Create streaming response with userId and plan from JWT
     const stream = await chatController.sendMessageStream({
       ...parseResult.data,
       userId: authResult.userId,
+      plan: authResult.plan,
     });
 
     return new Response(stream, {

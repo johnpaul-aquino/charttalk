@@ -19,6 +19,13 @@ export interface AppConfig {
     apiKey: string;
     requestsPerSecond: number;
     dailyLimit: number;
+    timeout: {
+      chartGeneration: number;
+      exchanges: number;
+      symbols: number;
+      documentation: number;
+      download: number;
+    };
   };
   openai?: {
     apiKey?: string;
@@ -83,6 +90,13 @@ export function loadConfig(): AppConfig {
       apiKey,
       requestsPerSecond: parseInt(process.env.CHART_IMG_RPS || String(planLimits.rps)),
       dailyLimit: parseInt(process.env.CHART_IMG_DAILY_LIMIT || String(planLimits.daily)),
+      timeout: {
+        chartGeneration: parseInt(process.env.CHART_IMG_TIMEOUT || '15000'),
+        exchanges: parseInt(process.env.CHART_IMG_EXCHANGES_TIMEOUT || '8000'),
+        symbols: parseInt(process.env.CHART_IMG_SYMBOLS_TIMEOUT || '8000'),
+        documentation: parseInt(process.env.CHART_IMG_DOC_TIMEOUT || '10000'),
+        download: parseInt(process.env.CHART_IMG_DOWNLOAD_TIMEOUT || '20000'),
+      },
     },
     openai: process.env.OPENAI_API_KEY
       ? {
@@ -139,6 +153,7 @@ function getPlanLimits(plan: string): { rps: number; daily: number } {
     BASIC: { rps: 1, daily: 50 },
     PRO: { rps: 10, daily: 500 },
     MEGA: { rps: 15, daily: 1000 },
+    MAX: { rps: 25, daily: 2000 },
     ULTRA: { rps: 35, daily: 3000 },
     ENTERPRISE: { rps: 35, daily: 5000 },
   };
