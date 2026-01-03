@@ -132,7 +132,7 @@ export interface IChartConfigService {
   detectInterval(text: string, range: string): string;
   detectTheme(text: string): 'light' | 'dark';
   detectChartStyle(text: string): ChartConfig['style'];
-  detectIndicators(text: string, availableIndicators: any[]): ChartStudy[];
+  detectIndicators(text: string): ChartStudy[];
   detectDrawings(text: string): Promise<ChartDrawing[]>;
   parseResolution(resolution: string): { width: number; height: number };
 }

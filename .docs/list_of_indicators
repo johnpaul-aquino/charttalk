@@ -1,0 +1,107 @@
+# Available Technical Indicators (100+)
+
+## Trend Indicators
+- Arnaud Legoux Moving Average
+- Double EMA
+- Hull Moving Average
+- Ichimoku Cloud
+- Least Squares Moving Average
+- Linear Regression Curve
+- Linear Regression Slope
+- MA Cross
+- MA with EMA Cross
+- McGinley Dynamic
+- Moving Average
+- Moving Average Adaptive
+- Moving Average Channel
+- Moving Average Double
+- Moving Average Exponential
+- Moving Average Hamming
+- Moving Average Multiple
+- Moving Average Triple
+- Moving Average Weighted
+- Parabolic SAR
+- Smoothed Moving Average
+- Super Trend
+- Triple EMA
+- Williams Alligator
+
+## Momentum Indicators
+- Awesome Oscillator
+- Chande Momentum Oscillator
+- Commodity Channel Index
+- Connors RSI
+- Coppock Curve
+- Detrended Price Oscillator
+- MACD
+- Momentum
+- Price Oscillator
+- Rate Of Change
+- Relative Strength Index
+- Relative Vigor Index
+- SMI Ergodic Indicator/Oscillator
+- Stochastic
+- Stochastic RSI
+- Trend Strength Index
+- TRIX
+- True Strength Index
+- Ultimate Oscillator
+- Williams %R
+
+## Volume Indicators
+- Accumulation/Distribution
+- Chaikin Money Flow
+- Chaikin Oscillator
+- Ease of Movement
+- Elder's Force Index
+- Klinger Oscillator
+- Money Flow Index
+- Net Volume
+- On Balance Volume
+- Price Volume Trend
+- Volume
+- Volume Oscillator
+- Volume Profile Visible Range
+- VWAP
+- VWMA
+
+## Volatility Indicators
+- Average True Range
+- Bollinger Bands
+- Bollinger Bands %B
+- Bollinger Bands Width
+- Chaikin Volatility
+- Donchian Channels
+- Envelopes
+- Historical Volatility
+- Keltner Channels
+- Price Channel
+- Standard Deviation
+- Standard Error
+- Standard Error Bands
+- Volatility Close-to-Close
+- Volatility Index
+- Volatility O-H-L-C
+- Volatility Zero Trend Close-to-Close
+
+## Directional Indicators
+- Aroon
+- Average Directional Index
+- Balance of Power
+- Chande Kroll Stop
+- Directional Movement
+- Vortex Indicator
+
+## Market Breadth
+- Advance/Decline
+- Majority Rule
+
+## Other Indicators
+- Accumulative Swing Index
+- Chop Zone
+- Choppiness Index
+- Fisher Transform
+- Know Sure Thing
+- Mass Index
+- Williams Fractal
+- Zig Zag

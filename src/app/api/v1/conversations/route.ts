@@ -117,7 +117,7 @@ export const GET = pipe(
   withCors,
   withRateLimit({ capacity: 30, refillRate: 15 }),
   withAuth,
-  withPlan(['pro', 'max']),
+  withPlan(['free', 'pro', 'max']),
   withErrorHandler
 )(listHandler);
 
@@ -125,7 +125,7 @@ export const POST = pipe(
   withCors,
   withRateLimit({ capacity: 20, refillRate: 10 }),
   withAuth,
-  withPlan(['pro', 'max']),
+  withPlan(['free', 'pro', 'max']),
   withErrorHandler
 )(createHandler);
 

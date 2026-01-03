@@ -72,7 +72,7 @@ export const POST = pipe(
   withCors,
   withRateLimit({ capacity: 10, refillRate: 2 }), // Stricter rate limit for AI endpoints
   withAuth,
-  withPlan(['pro', 'max']),
+  withPlan(['free', 'pro', 'max']),
   withErrorHandler
 )(handler);
 

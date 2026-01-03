@@ -34,7 +34,7 @@ function getJWTService(): JWTService {
 }
 
 // Allowed plans for this premium endpoint
-const ALLOWED_PLANS: PlanType[] = ['pro', 'max'];
+const ALLOWED_PLANS: PlanType[] = ['free', 'pro', 'max'];
 const VALID_SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['active', 'trialing'];
 
 /**

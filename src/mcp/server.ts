@@ -7,6 +7,15 @@
  * Provides 6 tools for AI clients to generate trading charts.
  */
 
+// Initialize Sentry first (production only)
+import {
+  initSentryForMCP,
+  captureMCPError,
+  flushSentry,
+  Sentry,
+} from '../core/monitoring/sentry.js';
+initSentryForMCP();
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -215,7 +224,10 @@ class ChartImgMCPServer {
             throw new Error(`Unknown tool: ${name}`);
         }
       } catch (error) {
+        // Capture error to Sentry with tool context
         if (error instanceof Error) {
+          captureMCPError(error, name, args as Record<string, unknown>);
+
           return {
             content: [
               {
@@ -316,18 +328,44 @@ class ChartImgMCPServer {
    * Setup error handlers
    */
   private setupErrorHandlers() {
+    // MCP server error handler
     this.server.onerror = (error) => {
       console.error('[MCP Error]', error);
+      if (process.env.NODE_ENV === 'production' && error instanceof Error) {
+        Sentry.captureException(error);
+      }
     };
 
+    // Global uncaught exception handler
+    process.on('uncaughtException', (error) => {
+      console.error('[MCP Server] Uncaught exception:', error);
+      if (process.env.NODE_ENV === 'production') {
+        Sentry.captureException(error);
+        flushSentry().then(() => process.exit(1));
+      } else {
+        process.exit(1);
+      }
+    });
+
+    // Global unhandled rejection handler
+    process.on('unhandledRejection', (reason) => {
+      console.error('[MCP Server] Unhandled rejection:', reason);
+      if (process.env.NODE_ENV === 'production' && reason instanceof Error) {
+        Sentry.captureException(reason);
+      }
+    });
+
+    // Graceful shutdown handlers
     process.on('SIGINT', async () => {
       console.error('\n[MCP Server] Shutting down...');
+      await flushSentry();
       await this.server.close();
       process.exit(0);
     });
 
     process.on('SIGTERM', async () => {
       console.error('\n[MCP Server] Shutting down...');
+      await flushSentry();
       await this.server.close();
       process.exit(0);
     });

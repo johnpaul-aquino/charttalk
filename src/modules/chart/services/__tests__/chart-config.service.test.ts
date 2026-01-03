@@ -145,6 +145,88 @@ describe('ChartConfigService', () => {
     });
   });
 
+  describe('detectIndicators', () => {
+    it('should detect RSI indicator', () => {
+      const result = service.detectIndicators('add rsi 14');
+      const rsiStudy = result.find((s) => s.name === 'Relative Strength Index');
+
+      expect(rsiStudy).toBeDefined();
+      expect(rsiStudy?.input?.length).toBe(14);
+    });
+
+    it('should detect multiple indicators', () => {
+      const result = service.detectIndicators('add rsi and macd and bollinger bands');
+
+      expect(result.length).toBeGreaterThanOrEqual(3);
+      expect(result.some((s) => s.name === 'Relative Strength Index')).toBe(true);
+      expect(result.some((s) => s.name === 'MACD')).toBe(true);
+      expect(result.some((s) => s.name === 'Bollinger Bands')).toBe(true);
+    });
+
+    it('should detect MA with period', () => {
+      const result = service.detectIndicators('add ma 20');
+      const maStudy = result.find((s) => s.name === 'Moving Average');
+
+      expect(maStudy).toBeDefined();
+      expect(maStudy?.input?.length).toBe(20);
+    });
+
+    it('should detect multiple MAs with different periods', () => {
+      const result = service.detectIndicators('add ma 20, ma 50, ma 200');
+      const maStudies = result.filter((s) => s.name === 'Moving Average');
+
+      expect(maStudies.length).toBe(3);
+      expect(maStudies.some((s) => s.input?.length === 20)).toBe(true);
+      expect(maStudies.some((s) => s.input?.length === 50)).toBe(true);
+      expect(maStudies.some((s) => s.input?.length === 200)).toBe(true);
+    });
+
+    it('should detect EMA with period', () => {
+      const result = service.detectIndicators('add ema 9');
+      const emaStudy = result.find((s) => s.name === 'Moving Average Exponential');
+
+      expect(emaStudy).toBeDefined();
+      expect(emaStudy?.input?.length).toBe(9);
+    });
+
+    it('should detect multiple EMAs with different periods', () => {
+      const result = service.detectIndicators('add ema 9 ema 21 ema 55');
+      const emaStudies = result.filter((s) => s.name === 'Moving Average Exponential');
+
+      expect(emaStudies.length).toBe(3);
+    });
+
+    it('should not duplicate indicators with same name', () => {
+      const result = service.detectIndicators('rsi and relative strength index');
+      const rsiCount = result.filter((s) => s.name === 'Relative Strength Index').length;
+
+      expect(rsiCount).toBe(1);
+    });
+
+    it('should be case insensitive', () => {
+      const result = service.detectIndicators('Add RSI and MACD');
+
+      expect(result.some((s) => s.name === 'Relative Strength Index')).toBe(true);
+      expect(result.some((s) => s.name === 'MACD')).toBe(true);
+    });
+
+    it('should detect MACD with all parameters', () => {
+      const result = service.detectIndicators('macd 12 26 9');
+      const macdStudy = result.find((s) => s.name === 'MACD');
+
+      expect(macdStudy).toBeDefined();
+      expect(macdStudy?.input?.fastLength).toBe(12);
+      expect(macdStudy?.input?.slowLength).toBe(26);
+      expect(macdStudy?.input?.signalLength).toBe(9);
+    });
+
+    it('should return empty array when no indicators detected', () => {
+      const result = service.detectIndicators('just show the chart');
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('constructFromNaturalLanguage', () => {
     it('should construct config from natural language', async () => {
       const result = await service.constructFromNaturalLanguage(

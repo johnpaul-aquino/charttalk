@@ -1,0 +1,560 @@
+{
+  "generatedAt": "2025-12-29T15:00:38.037Z",
+  "total": 92,
+  "successful": 92,
+  "failed": 0,
+  "results": [
+    {
+      "id": "arnaud-legoux-moving-average",
+      "name": "Arnaud Legoux Moving Average",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/6dd6dc99-1b5d-4398-b78d-dc3da684c9de.png"
+    },
+    {
+      "id": "double-ema",
+      "name": "Double EMA",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/26fb23b4-88d8-4b07-b152-1f2887c71ac6.png"
+    },
+    {
+      "id": "hull-moving-average",
+      "name": "Hull Moving Average",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/042cd50d-2830-4776-8546-ee4f3280f80a.png"
+    },
+    {
+      "id": "ichimoku-cloud",
+      "name": "Ichimoku Cloud",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/e01e0552-ed8e-4c28-859c-87dde6877ebd.png"
+    },
+    {
+      "id": "least-squares-moving-average",
+      "name": "Least Squares Moving Average",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/b10b8b1b-95ab-445a-b951-d1e48807573d.png"
+    },
+    {
+      "id": "linear-regression-curve",
+      "name": "Linear Regression Curve",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0bc09af6-4306-4517-9941-952e9c3816cb.png"
+    },
+    {
+      "id": "linear-regression-slope",
+      "name": "Linear Regression Slope",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/844cb74c-a10c-4fdb-9c69-d803c6b3cdc7.png"
+    },
+    {
+      "id": "ma-cross",
+      "name": "MA Cross",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/1834128a-1df0-4f84-b40d-d33a60b82f28.png"
+    },
+    {
+      "id": "ma-with-ema-cross",
+      "name": "MA with EMA Cross",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0cc87074-60ca-41f0-a22e-50fab27da324.png"
+    },
+    {
+      "id": "mcginley-dynamic",
+      "name": "McGinley Dynamic",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/4f68ba40-1389-44a1-9979-71a8e5bd81df.png"
+    },
+    {
+      "id": "moving-average",
+      "name": "Moving Average",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0855c7fe-4690-4353-b02f-409b7cec58d8.png"
+    },
+    {
+      "id": "moving-average-adaptive",
+      "name": "Moving Average Adaptive",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/42a1072b-da24-40d8-b961-9a34df74b356.png"
+    },
+    {
+      "id": "moving-average-channel",
+      "name": "Moving Average Channel",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/9ea96262-f4b8-4b8b-a248-dad40c3efcdb.png"
+    },
+    {
+      "id": "moving-average-double",
+      "name": "Moving Average Double",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/46749556-cf4a-41cc-92fe-c11e2e76fb25.png"
+    },
+    {
+      "id": "moving-average-exponential",
+      "name": "Moving Average Exponential",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/142240dd-5d51-4619-816c-09ca4ce5cc5f.png"
+    },
+    {
+      "id": "moving-average-hamming",
+      "name": "Moving Average Hamming",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/455d4d09-6225-4464-a68d-5ad0c983c8d8.png"
+    },
+    {
+      "id": "moving-average-multiple",
+      "name": "Moving Average Multiple",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/83e01139-e3de-426e-9fbb-f4ad150b5ed4.png"
+    },
+    {
+      "id": "moving-average-triple",
+      "name": "Moving Average Triple",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/aee50ae8-0705-41ea-9af1-84a8f73ceb0f.png"
+    },
+    {
+      "id": "moving-average-weighted",
+      "name": "Moving Average Weighted",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/885ae75c-793d-4382-a02d-98b69b11e15d.png"
+    },
+    {
+      "id": "parabolic-sar",
+      "name": "Parabolic SAR",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/57f6d6a8-8b86-4fab-87b3-7591288c3e87.png"
+    },
+    {
+      "id": "smoothed-moving-average",
+      "name": "Smoothed Moving Average",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0e1970ab-3df6-4c8c-bdcd-7c6b4bdc2a55.png"
+    },
+    {
+      "id": "super-trend",
+      "name": "Super Trend",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/a4b6cd9e-2c89-44e0-ac9f-6c9f60bdc175.png"
+    },
+    {
+      "id": "triple-ema",
+      "name": "Triple EMA",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/abaa5fe1-3ab6-44fd-97ad-f838fa930b5d.png"
+    },
+    {
+      "id": "williams-alligator",
+      "name": "Williams Alligator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/39995488-2a6f-4fd6-adda-fceb8468d317.png"
+    },
+    {
+      "id": "awesome-oscillator",
+      "name": "Awesome Oscillator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/a420d964-c393-4ebc-97a6-91702afa7168.png"
+    },
+    {
+      "id": "chande-momentum-oscillator",
+      "name": "Chande Momentum Oscillator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/996fbf0b-27aa-4019-9261-e02e9cf9f717.png"
+    },
+    {
+      "id": "commodity-channel-index",
+      "name": "Commodity Channel Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/8d11fa70-817b-4c8c-9ef9-14c1adb9ccc8.png"
+    },
+    {
+      "id": "connors-rsi",
+      "name": "Connors RSI",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/d08a985e-408a-4411-be2f-d64d27e09f0f.png"
+    },
+    {
+      "id": "coppock-curve",
+      "name": "Coppock Curve",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/9422b7bb-7862-425a-a296-270c6dbd8bb1.png"
+    },
+    {
+      "id": "detrended-price-oscillator",
+      "name": "Detrended Price Oscillator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/224d25a9-9316-4055-a219-b07860e9ecbc.png"
+    },
+    {
+      "id": "macd",
+      "name": "MACD",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/b1dc5151-5b4a-41dd-af69-30d3c5427bac.png"
+    },
+    {
+      "id": "momentum",
+      "name": "Momentum",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/27d08c7c-288c-49be-9e5e-6ca5f7ce6b9c.png"
+    },
+    {
+      "id": "price-oscillator",
+      "name": "Price Oscillator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0a1d6999-5a3c-4df0-b340-dd91161d412d.png"
+    },
+    {
+      "id": "rate-of-change",
+      "name": "Rate Of Change",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/6b583149-aa95-4fca-807d-2e7546349483.png"
+    },
+    {
+      "id": "relative-strength-index",
+      "name": "Relative Strength Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/8c34ff82-ed05-4049-a440-84dc347b76a4.png"
+    },
+    {
+      "id": "relative-vigor-index",
+      "name": "Relative Vigor Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/8febd150-d18e-4a83-9926-43282c1092c9.png"
+    },
+    {
+      "id": "smi-ergodic-indicatoroscillator",
+      "name": "SMI Ergodic Indicator/Oscillator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/b08afdad-6b53-4307-9e5b-52bd5259f425.png"
+    },
+    {
+      "id": "stochastic",
+      "name": "Stochastic",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/77348852-57b6-40da-9dc1-5427e1c58042.png"
+    },
+    {
+      "id": "stochastic-rsi",
+      "name": "Stochastic RSI",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/f62de950-a10f-453a-915b-de9be167e967.png"
+    },
+    {
+      "id": "trend-strength-index",
+      "name": "Trend Strength Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/820c9b58-5ba2-487a-8682-12b8c4b6e67c.png"
+    },
+    {
+      "id": "trix",
+      "name": "TRIX",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/9b922bc2-19f7-4e2a-a340-a59c5272c99a.png"
+    },
+    {
+      "id": "true-strength-index",
+      "name": "True Strength Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/f3fc5faa-0ccd-461d-a7f5-3972d4345f3a.png"
+    },
+    {
+      "id": "ultimate-oscillator",
+      "name": "Ultimate Oscillator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/ef35017d-20c7-4343-b85b-ab4cd7f065f8.png"
+    },
+    {
+      "id": "williams-r",
+      "name": "Williams %R",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/2e72d705-a134-4bae-b4fe-5cefed110c99.png"
+    },
+    {
+      "id": "accumulationdistribution",
+      "name": "Accumulation/Distribution",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/4276b763-4c54-4b25-b2ae-ea4346b178e8.png"
+    },
+    {
+      "id": "chaikin-money-flow",
+      "name": "Chaikin Money Flow",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0aa4693e-6e6c-4778-b540-e48e4a28ba18.png"
+    },
+    {
+      "id": "chaikin-oscillator",
+      "name": "Chaikin Oscillator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/62df9642-d558-42f3-9965-42751b8e4a24.png"
+    },
+    {
+      "id": "ease-of-movement",
+      "name": "Ease of Movement",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/e10935ba-6df2-4022-ba2b-cec84a11a2b2.png"
+    },
+    {
+      "id": "elders-force-index",
+      "name": "Elder's Force Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/27a778db-67a6-41ad-a74a-ed500a80fb65.png"
+    },
+    {
+      "id": "klinger-oscillator",
+      "name": "Klinger Oscillator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/f2bc73d2-acf5-419d-ae1e-a2118c3207b3.png"
+    },
+    {
+      "id": "money-flow-index",
+      "name": "Money Flow Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/c51fc0b8-52a2-44fa-826f-85b9d06c57b8.png"
+    },
+    {
+      "id": "net-volume",
+      "name": "Net Volume",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/ab776f9b-e764-4f1c-96b6-e6050e3f7927.png"
+    },
+    {
+      "id": "on-balance-volume",
+      "name": "On Balance Volume",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/33f6de0f-348f-442a-9652-eb33c70e0c29.png"
+    },
+    {
+      "id": "price-volume-trend",
+      "name": "Price Volume Trend",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/6b245451-345d-40ef-a057-0684851b85c8.png"
+    },
+    {
+      "id": "volume",
+      "name": "Volume",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/7c98e648-5c00-4637-8ce0-4f0d520c7e29.png"
+    },
+    {
+      "id": "volume-oscillator",
+      "name": "Volume Oscillator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/a71ea3bb-206f-4bb3-8ac6-1d49c27a87b6.png"
+    },
+    {
+      "id": "volume-profile-visible-range",
+      "name": "Volume Profile Visible Range",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/85cc857b-11a3-4f75-9c65-ace674a3c54e.png"
+    },
+    {
+      "id": "vwap",
+      "name": "VWAP",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/ecf007ca-c1cb-42fa-b8af-ad550f1a0a6a.png"
+    },
+    {
+      "id": "vwma",
+      "name": "VWMA",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/bb0dcb31-a474-455a-ac30-6b711cba8328.png"
+    },
+    {
+      "id": "average-true-range",
+      "name": "Average True Range",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/6b2b092f-3582-4a64-8d80-fc16d2568986.png"
+    },
+    {
+      "id": "bollinger-bands",
+      "name": "Bollinger Bands",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/5dbe2a69-9bdc-4634-87a4-b04034eea31f.png"
+    },
+    {
+      "id": "bollinger-bands-b",
+      "name": "Bollinger Bands %B",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/55f416da-d477-49b6-b6b7-c0fd3d69d464.png"
+    },
+    {
+      "id": "bollinger-bands-width",
+      "name": "Bollinger Bands Width",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/a499fd1e-82aa-4128-9faf-28a5da54c513.png"
+    },
+    {
+      "id": "chaikin-volatility",
+      "name": "Chaikin Volatility",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/80390425-347f-4a1e-9800-f9ab960a58ff.png"
+    },
+    {
+      "id": "donchian-channels",
+      "name": "Donchian Channels",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/fda5b9cf-04da-44f9-938f-7553ff7a4b6a.png"
+    },
+    {
+      "id": "envelopes",
+      "name": "Envelopes",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/41b9d5e8-ff0a-4658-934f-c285f53201bb.png"
+    },
+    {
+      "id": "historical-volatility",
+      "name": "Historical Volatility",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/6158ed63-5d0d-4a3c-b913-cd4ab32b90d3.png"
+    },
+    {
+      "id": "keltner-channels",
+      "name": "Keltner Channels",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/03643e18-c200-4693-bf6d-296e991f8242.png"
+    },
+    {
+      "id": "price-channel",
+      "name": "Price Channel",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0fd23265-eb44-46f8-a749-3d973156637d.png"
+    },
+    {
+      "id": "standard-deviation",
+      "name": "Standard Deviation",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/d5376861-d78b-4c25-b516-55b90e7a6f41.png"
+    },
+    {
+      "id": "standard-error",
+      "name": "Standard Error",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/30e2f431-0fd2-4026-bf01-a511e3b24dc6.png"
+    },
+    {
+      "id": "standard-error-bands",
+      "name": "Standard Error Bands",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0fec7543-04bc-4b2d-b81f-0ad9f3f30053.png"
+    },
+    {
+      "id": "volatility-closetoclose",
+      "name": "Volatility Close-to-Close",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/d7487c2c-8bc5-4a55-8e4f-d40ce63c198c.png"
+    },
+    {
+      "id": "volatility-index",
+      "name": "Volatility Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/4a759921-3396-402e-a2e0-3843f14eb356.png"
+    },
+    {
+      "id": "volatility-ohlc",
+      "name": "Volatility O-H-L-C",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/11433daf-c197-4b55-828e-7a0e03bca181.png"
+    },
+    {
+      "id": "volatility-zero-trend-closetoclose",
+      "name": "Volatility Zero Trend Close-to-Close",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/f9433de5-967e-4ca5-bb07-9ab63be6a886.png"
+    },
+    {
+      "id": "aroon",
+      "name": "Aroon",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/9511488d-c886-4428-95a7-16380426af05.png"
+    },
+    {
+      "id": "average-directional-index",
+      "name": "Average Directional Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/4fb4e1da-47a5-4b24-ad5a-c3e3147bafe3.png"
+    },
+    {
+      "id": "balance-of-power",
+      "name": "Balance of Power",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/951eba66-4876-4d4b-91b4-7ffd6651b49e.png"
+    },
+    {
+      "id": "chande-kroll-stop",
+      "name": "Chande Kroll Stop",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/82534bd7-aca2-4b07-b428-a0ac152e9544.png"
+    },
+    {
+      "id": "directional-movement",
+      "name": "Directional Movement",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/00a9de28-bd59-4b2f-97c9-097fbd9c3ef9.png"
+    },
+    {
+      "id": "vortex-indicator",
+      "name": "Vortex Indicator",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0e64f925-89d4-4ea8-b093-6b5a45b2b677.png"
+    },
+    {
+      "id": "advancedecline",
+      "name": "Advance/Decline",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/3bb0f534-1b30-44fa-8ecd-2251d3fa531a.png"
+    },
+    {
+      "id": "majority-rule",
+      "name": "Majority Rule",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/4bc7da63-0f79-4593-963d-c800a425eedd.png"
+    },
+    {
+      "id": "accumulative-swing-index",
+      "name": "Accumulative Swing Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/52c45920-981a-4a7e-bfb0-fe89c687f763.png"
+    },
+    {
+      "id": "chop-zone",
+      "name": "Chop Zone",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/59c218c5-dbfa-4928-aefa-6c27539d3d85.png"
+    },
+    {
+      "id": "choppiness-index",
+      "name": "Choppiness Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/b5f36fdb-3770-4a63-bb29-e33127f2d261.png"
+    },
+    {
+      "id": "fisher-transform",
+      "name": "Fisher Transform",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/0315c21f-b374-4a3c-b818-3a815321d828.png"
+    },
+    {
+      "id": "know-sure-thing",
+      "name": "Know Sure Thing",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/d2ca3e60-20eb-426e-b933-ee1fb4089a88.png"
+    },
+    {
+      "id": "mass-index",
+      "name": "Mass Index",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/fcf1a184-d207-4ee1-be50-f88abe122597.png"
+    },
+    {
+      "id": "williams-fractal",
+      "name": "Williams Fractal",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/5cfe26c3-446d-41f4-afb2-5db5429323a7.png"
+    },
+    {
+      "id": "zig-zag",
+      "name": "Zig Zag",
+      "success": true,
+      "imageUrl": "https://r2.chart-img.com/20260329/tradingview/advanced-chart/b5a7aaa8-a07b-448d-8aed-db88708f84a9.png"
+    }
+  ]
+}

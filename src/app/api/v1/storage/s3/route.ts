@@ -57,7 +57,7 @@ export const POST = pipe(
   withCors,
   withRateLimit({ capacity: 10, refillRate: 5 }), // 10 burst, 5/sec refill
   withAuth,
-  withPlan(['pro', 'max']),
+  withPlan(['free', 'pro', 'max']),
   withErrorHandler
 )(handler);
 

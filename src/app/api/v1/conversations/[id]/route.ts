@@ -141,7 +141,7 @@ export const GET = pipe(
   withCors,
   withRateLimit({ capacity: 30, refillRate: 15 }),
   withAuth,
-  withPlan(['pro', 'max']),
+  withPlan(['free', 'pro', 'max']),
   withErrorHandler
 )(getHandler);
 
@@ -149,7 +149,7 @@ export const PATCH = pipe(
   withCors,
   withRateLimit({ capacity: 20, refillRate: 10 }),
   withAuth,
-  withPlan(['pro', 'max']),
+  withPlan(['free', 'pro', 'max']),
   withErrorHandler
 )(updateHandler);
 
@@ -157,7 +157,7 @@ export const DELETE = pipe(
   withCors,
   withRateLimit({ capacity: 10, refillRate: 5 }),
   withAuth,
-  withPlan(['pro', 'max']),
+  withPlan(['free', 'pro', 'max']),
   withErrorHandler
 )(deleteHandler);
 

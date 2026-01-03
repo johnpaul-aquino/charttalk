@@ -593,7 +593,10 @@ Parameters:
 - symbol: Trading symbol (e.g., "BINANCE:BTCUSDT", "NASDAQ:AAPL", "FX:EURUSD")
 - interval: Time interval for candles
 - range: Time range to display (IMPORTANT: "7 days" = "1M", there is no "1W" range)
-- indicators: Array of indicator names (e.g., ["RSI", "MACD", "Bollinger Bands"])
+- indicators: Array of indicator names. IMPORTANT: Some indicators have compound names that should be kept as single items:
+  - "MA with EMA Cross" (not split into MA and EMA)
+  - "Moving Average Exponential" (not "Moving Average" + "Exponential")
+  - Examples: ["RSI"], ["MACD", "Bollinger Bands"], ["MA with EMA Cross"]
 - theme: "light" or "dark"
 
 Returns: Chart image URL and metadata`,
@@ -617,7 +620,7 @@ Returns: Chart image URL and metadata`,
             indicators: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Technical indicators to add (e.g., RSI, MACD)',
+              description: 'Technical indicators. Keep compound names as single items: "MA with EMA Cross", "Bollinger Bands", "Moving Average Exponential"',
             },
             theme: {
               type: 'string',

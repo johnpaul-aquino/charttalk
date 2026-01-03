@@ -15,7 +15,12 @@ import type {
 import type { IndicatorsRepository } from '../repositories/indicators.repository';
 import type { DrawingsRepository } from '../repositories/drawings.repository';
 import { detectDrawingsFromText, buildDrawingConfig } from '../../../core/database/loaders/drawings.loader';
-import { fetchDocumentation } from '../../../mcp/utils/doc-parser';
+import { parseIndicatorsWithParams } from '../../../core/database/loaders/indicators.loader';
+import {
+  validateSymbol,
+  isValidExchange,
+  getSuggestedExchanges,
+} from '../../../core/database/loaders/exchanges.loader';
 
 export class ChartConfigService implements IChartConfigService {
   constructor(
@@ -40,10 +45,6 @@ export class ChartConfigService implements IChartConfigService {
     try {
       const nl = naturalLanguage.toLowerCase();
       const warnings: string[] = [];
-
-      // Fetch documentation for indicators
-      const docs = await fetchDocumentation('indicators');
-      const indicators = docs.indicators || [];
 
       // 1. Detect Symbol
       let symbol = preferences?.symbol;
@@ -81,8 +82,8 @@ export class ChartConfigService implements IChartConfigService {
         height = parsed.height;
       }
 
-      // 7. Detect Indicators
-      const studies = this.detectIndicators(nl, indicators);
+      // 7. Detect Indicators (database-driven with parameter parsing)
+      const studies = this.detectIndicators(nl);
 
       // 8. Detect Drawings
       const drawings = await this.detectDrawings(nl);
@@ -120,7 +121,16 @@ export class ChartConfigService implements IChartConfigService {
   }
 
   /**
-   * Detect symbol from natural language text
+   * Detect and validate symbol from text
+   *
+   * Strategy:
+   * 1. Check for explicit EXCHANGE:SYMBOL format first (validate exchange)
+   * 2. Fall back to common symbol shortcuts for user convenience
+   * 3. The LLM should provide explicit symbols - this is just a fallback
+   *
+   * @param text - Natural language text or explicit symbol
+   * @param preferredExchange - Optional preferred exchange override
+   * @returns Validated symbol object or null
    */
   detectSymbol(
     text: string,
@@ -128,115 +138,107 @@ export class ChartConfigService implements IChartConfigService {
   ): { symbol: string; exchange: string; fullSymbol: string } | null {
     const nl = text.toLowerCase();
 
-    // First, check for explicit EXCHANGE:SYMBOL format (e.g., "BINANCE:BTCUSDT", "FX:XAUUSD")
-    const explicitSymbolMatch = text.match(/\b([A-Z0-9_]+):([A-Z0-9]+)\b/i);
+    // 1. Check for explicit EXCHANGE:SYMBOL format (e.g., "BINANCE:BTCUSDT", "FX:XAUUSD")
+    // This regex matches common TradingView symbol formats including:
+    // - Standard: BINANCE:BTCUSDT, NASDAQ:AAPL
+    // - Perpetual: BYBIT:BTCUSDT.P
+    // - Futures: CME:ES1!, COMEX:GC1!
+    // - Special: PANCAKESWAP:XRPCUSD_4314AC
+    const explicitSymbolMatch = text.match(/\b([A-Z0-9_]+):([A-Z0-9_.!\/]+)\b/i);
     if (explicitSymbolMatch) {
-      const exchange = explicitSymbolMatch[1].toUpperCase();
+      const exchange = (preferredExchange || explicitSymbolMatch[1]).toUpperCase();
       const symbol = explicitSymbolMatch[2].toUpperCase();
-      console.log(`[ChartConfigService] Detected explicit symbol format: ${exchange}:${symbol}`);
+
+      // Validate exchange exists in our database
+      const validation = validateSymbol(`${exchange}:${symbol}`);
+      if (!validation.valid) {
+        console.warn(`[ChartConfigService] Invalid exchange: ${exchange}. ${validation.error}`);
+        // Still return the symbol - let the API return the error
+        // This allows the LLM to learn from the error
+      }
+
+      console.log(`[ChartConfigService] Detected explicit symbol: ${exchange}:${symbol}`);
       return {
         symbol,
-        exchange: preferredExchange || exchange,
-        fullSymbol: `${preferredExchange || exchange}:${symbol}`,
+        exchange,
+        fullSymbol: `${exchange}:${symbol}`,
       };
     }
 
-    // Common crypto mappings
-    const cryptoMappings: Record<string, { symbol: string; exchange: string }> = {
-      bitcoin: { symbol: 'BTCUSDT', exchange: 'BINANCE' },
-      btc: { symbol: 'BTCUSDT', exchange: 'BINANCE' },
-      ethereum: { symbol: 'ETHUSDT', exchange: 'BINANCE' },
-      eth: { symbol: 'ETHUSDT', exchange: 'BINANCE' },
-      solana: { symbol: 'SOLUSDT', exchange: 'BINANCE' },
-      sol: { symbol: 'SOLUSDT', exchange: 'BINANCE' },
-      cardano: { symbol: 'ADAUSDT', exchange: 'BINANCE' },
-      ada: { symbol: 'ADAUSDT', exchange: 'BINANCE' },
-      ripple: { symbol: 'XRPUSDT', exchange: 'BINANCE' },
-      xrp: { symbol: 'XRPUSDT', exchange: 'BINANCE' },
-      dogecoin: { symbol: 'DOGEUSDT', exchange: 'BINANCE' },
-      doge: { symbol: 'DOGEUSDT', exchange: 'BINANCE' },
-      polkadot: { symbol: 'DOTUSDT', exchange: 'BINANCE' },
-      dot: { symbol: 'DOTUSDT', exchange: 'BINANCE' },
-      avalanche: { symbol: 'AVAXUSDT', exchange: 'BINANCE' },
-      avax: { symbol: 'AVAXUSDT', exchange: 'BINANCE' },
-      polygon: { symbol: 'MATICUSDT', exchange: 'BINANCE' },
-      matic: { symbol: 'MATICUSDT', exchange: 'BINANCE' },
-      chainlink: { symbol: 'LINKUSDT', exchange: 'BINANCE' },
-      link: { symbol: 'LINKUSDT', exchange: 'BINANCE' },
-    };
+    // 2. Fallback: Common symbol shortcuts (for user convenience)
+    // These use word boundaries to avoid false positives
+    const commonSymbols = this.getCommonSymbolMappings();
 
-    // Common stock mappings
-    const stockMappings: Record<string, { symbol: string; exchange: string }> = {
-      apple: { symbol: 'AAPL', exchange: 'NASDAQ' },
-      aapl: { symbol: 'AAPL', exchange: 'NASDAQ' },
-      tesla: { symbol: 'TSLA', exchange: 'NASDAQ' },
-      tsla: { symbol: 'TSLA', exchange: 'NASDAQ' },
-      microsoft: { symbol: 'MSFT', exchange: 'NASDAQ' },
-      msft: { symbol: 'MSFT', exchange: 'NASDAQ' },
-      amazon: { symbol: 'AMZN', exchange: 'NASDAQ' },
-      amzn: { symbol: 'AMZN', exchange: 'NASDAQ' },
-      google: { symbol: 'GOOGL', exchange: 'NASDAQ' },
-      googl: { symbol: 'GOOGL', exchange: 'NASDAQ' },
-      nvidia: { symbol: 'NVDA', exchange: 'NASDAQ' },
-      nvda: { symbol: 'NVDA', exchange: 'NASDAQ' },
-      meta: { symbol: 'META', exchange: 'NASDAQ' },
-      facebook: { symbol: 'META', exchange: 'NASDAQ' },
-    };
+    for (const [pattern, mapping] of commonSymbols) {
+      if (pattern.test(nl)) {
+        const exchange = preferredExchange || mapping.exchange;
+        // Validate exchange
+        if (!isValidExchange(exchange)) {
+          console.warn(`[ChartConfigService] Preferred exchange ${exchange} not valid, using ${mapping.exchange}`);
+        }
+        const finalExchange = isValidExchange(exchange) ? exchange : mapping.exchange;
 
-    // Forex mappings
-    const forexMappings: Record<string, { symbol: string; exchange: string }> = {
-      'eur/usd': { symbol: 'EURUSD', exchange: 'FX' },
-      'eurusd': { symbol: 'EURUSD', exchange: 'FX' },
-      'gbp/usd': { symbol: 'GBPUSD', exchange: 'FX' },
-      'gbpusd': { symbol: 'GBPUSD', exchange: 'FX' },
-      'usd/jpy': { symbol: 'USDJPY', exchange: 'FX' },
-      'usdjpy': { symbol: 'USDJPY', exchange: 'FX' },
-      // Gold
-      'gold': { symbol: 'XAUUSD', exchange: 'FX' },
-      'xau': { symbol: 'XAUUSD', exchange: 'FX' },
-      'xau/usd': { symbol: 'XAUUSD', exchange: 'FX' },
-      'xauusd': { symbol: 'XAUUSD', exchange: 'FX' },
-      // Silver
-      'silver': { symbol: 'XAGUSD', exchange: 'FX' },
-      'xag': { symbol: 'XAGUSD', exchange: 'FX' },
-      'xag/usd': { symbol: 'XAGUSD', exchange: 'FX' },
-      'xagusd': { symbol: 'XAGUSD', exchange: 'FX' },
-    };
-
-    // Check crypto
-    for (const [key, value] of Object.entries(cryptoMappings)) {
-      if (nl.includes(key)) {
         return {
-          symbol: value.symbol,
-          exchange: preferredExchange || value.exchange,
-          fullSymbol: `${preferredExchange || value.exchange}:${value.symbol}`,
-        };
-      }
-    }
-
-    // Check stocks
-    for (const [key, value] of Object.entries(stockMappings)) {
-      if (nl.includes(key)) {
-        return {
-          symbol: value.symbol,
-          exchange: preferredExchange || value.exchange,
-          fullSymbol: `${preferredExchange || value.exchange}:${value.symbol}`,
-        };
-      }
-    }
-
-    // Check forex
-    for (const [key, value] of Object.entries(forexMappings)) {
-      if (nl.includes(key)) {
-        return {
-          symbol: value.symbol,
-          exchange: preferredExchange || value.exchange,
-          fullSymbol: `${preferredExchange || value.exchange}:${value.symbol}`,
+          symbol: mapping.symbol,
+          exchange: finalExchange,
+          fullSymbol: `${finalExchange}:${mapping.symbol}`,
         };
       }
     }
 
     return null;
+  }
+
+  /**
+   * Get common symbol mappings with word boundary patterns
+   * Uses RegExp for proper word boundary matching
+   */
+  private getCommonSymbolMappings(): Array<[RegExp, { symbol: string; exchange: string }]> {
+    return [
+      // Crypto (most popular)
+      [/\bbitcoin\b/i, { symbol: 'BTCUSDT', exchange: 'BINANCE' }],
+      [/\bbtc\b/i, { symbol: 'BTCUSDT', exchange: 'BINANCE' }],
+      [/\bethereum\b/i, { symbol: 'ETHUSDT', exchange: 'BINANCE' }],
+      [/\beth\b/i, { symbol: 'ETHUSDT', exchange: 'BINANCE' }],
+      [/\bsolana\b/i, { symbol: 'SOLUSDT', exchange: 'BINANCE' }],
+      [/\bsol\b/i, { symbol: 'SOLUSDT', exchange: 'BINANCE' }],
+      [/\bxrp\b/i, { symbol: 'XRPUSDT', exchange: 'BINANCE' }],
+      [/\bdogecoin\b/i, { symbol: 'DOGEUSDT', exchange: 'BINANCE' }],
+      [/\bdoge\b/i, { symbol: 'DOGEUSDT', exchange: 'BINANCE' }],
+
+      // Stocks (most popular)
+      [/\bapple\b/i, { symbol: 'AAPL', exchange: 'NASDAQ' }],
+      [/\baapl\b/i, { symbol: 'AAPL', exchange: 'NASDAQ' }],
+      [/\btesla\b/i, { symbol: 'TSLA', exchange: 'NASDAQ' }],
+      [/\btsla\b/i, { symbol: 'TSLA', exchange: 'NASDAQ' }],
+      [/\bnvidia\b/i, { symbol: 'NVDA', exchange: 'NASDAQ' }],
+      [/\bnvda\b/i, { symbol: 'NVDA', exchange: 'NASDAQ' }],
+      [/\bmicrosoft\b/i, { symbol: 'MSFT', exchange: 'NASDAQ' }],
+      [/\bmsft\b/i, { symbol: 'MSFT', exchange: 'NASDAQ' }],
+
+      // Indices
+      [/\bs&?p\s*500\b/i, { symbol: 'SPX', exchange: 'SP' }],
+      [/\bspx\b/i, { symbol: 'SPX', exchange: 'SP' }],
+      [/\bdow\s*jones\b/i, { symbol: 'DJI', exchange: 'DJ' }],
+      [/\bdji\b/i, { symbol: 'DJI', exchange: 'DJ' }],
+      [/\bvix\b/i, { symbol: 'VIX', exchange: 'CBOE' }],
+      [/\bdxy\b/i, { symbol: 'DXY', exchange: 'TVC' }],
+      [/\bdollar\s*index\b/i, { symbol: 'DXY', exchange: 'TVC' }],
+
+      // Forex
+      [/\beur\/?usd\b/i, { symbol: 'EURUSD', exchange: 'FX' }],
+      [/\bgbp\/?usd\b/i, { symbol: 'GBPUSD', exchange: 'FX' }],
+      [/\busd\/?jpy\b/i, { symbol: 'USDJPY', exchange: 'FX' }],
+
+      // Commodities
+      [/\bgold\b/i, { symbol: 'XAUUSD', exchange: 'FX' }],
+      [/\bxau\/?usd\b/i, { symbol: 'XAUUSD', exchange: 'FX' }],
+      [/\bsilver\b/i, { symbol: 'XAGUSD', exchange: 'FX' }],
+      [/\bxag\/?usd\b/i, { symbol: 'XAGUSD', exchange: 'FX' }],
+      [/\bcrude\s*oil\b/i, { symbol: 'CL1!', exchange: 'NYMEX' }],
+      [/\boil\s*futures?\b/i, { symbol: 'CL1!', exchange: 'NYMEX' }],
+      [/\bgold\s*futures?\b/i, { symbol: 'GC1!', exchange: 'COMEX' }],
+    ];
   }
 
   /**
@@ -341,137 +343,67 @@ export class ChartConfigService implements IChartConfigService {
 
   /**
    * Detect indicators from natural language
-   * Uses chart-img.com API format: full indicator names (not TradingView shorthand)
+   * Uses database-driven detection with parameter parsing (90+ indicators)
    */
-  detectIndicators(text: string, availableIndicators: any[]): ChartStudy[] {
+  detectIndicators(text: string): ChartStudy[] {
     const nl = text.toLowerCase();
-    const studies: ChartStudy[] = [];
 
-    // Common indicator keywords mapped to chart-img.com API indicator names
-    // The name must match exactly what chart-img.com expects (full name, not shorthand)
-    const indicatorKeywords: Record<string, string> = {
-      'bollinger bands': 'Bollinger Bands',
-      'bollinger': 'Bollinger Bands',
-      'bb': 'Bollinger Bands',
-      'rsi': 'Relative Strength Index',
-      'relative strength': 'Relative Strength Index',
-      'macd': 'MACD',
-      'moving average convergence': 'MACD',
-      'volume': 'Volume',
-      'stochastic': 'Stochastic',
-      'stochastic rsi': 'Stochastic RSI',
-      'stoch rsi': 'Stochastic RSI',
-      'stoch': 'Stochastic',
-      'atr': 'Average True Range',
-      'average true range': 'Average True Range',
-      'adx': 'Average Directional Index',
-      'ichimoku': 'Ichimoku Cloud',
-      'vwap': 'VWAP',
-      'pivot': 'Pivot Points Standard',
-    };
+    // Use database-driven parser for all indicators
+    const studies = parseIndicatorsWithParams(nl);
 
-    // Find indicators directly from keywords
-    const addedStudies = new Set<string>();
+    // Handle multiple MAs with different periods (MA 20, MA 50, MA 200)
+    this.handleMovingAverageMultiples(nl, studies);
 
-    for (const [keyword, indicatorName] of Object.entries(indicatorKeywords)) {
-      if (nl.includes(keyword) && !addedStudies.has(indicatorName)) {
-        studies.push({
-          name: indicatorName,
-          input: undefined, // Use default inputs
-        });
-        addedStudies.add(indicatorName);
-        console.log(`[ChartConfigService] Detected indicator: ${keyword} -> ${indicatorName}`);
+    return studies;
+  }
+
+  /**
+   * Handle multiple moving averages with different periods
+   * e.g., "MA 20, MA 50, MA 200" should create 3 separate MAs
+   * This is special handling because the main parser only adds one per indicator type
+   */
+  private handleMovingAverageMultiples(text: string, studies: ChartStudy[]): void {
+    // Collect existing periods from already detected studies
+    const existingMaPeriods = new Set<number>();
+    const existingEmaPeriods = new Set<number>();
+
+    for (const study of studies) {
+      if (study.name === 'Moving Average' && study.input?.length) {
+        existingMaPeriods.add(study.input.length);
+      }
+      if (study.name === 'Moving Average Exponential' && study.input?.length) {
+        existingEmaPeriods.add(study.input.length);
       }
     }
 
-    // Handle Moving Averages with periods (MA 20, MA 50, EMA 9, etc.)
-    // Pattern: (ma|sma|ema|moving average) followed by period number
-    const maPatterns = [
-      // MA with period: "MA 20", "ma20", "MA-20", "20 MA", "20-day MA"
-      /(?:ma|sma|moving average)[- ]?(\d+)/gi,
-      /(\d+)[- ]?(?:day|period)?[- ]?(?:ma|sma|moving average)/gi,
-      // EMA with period: "EMA 9", "ema9", "9 EMA", "9-day EMA"
-      /(?:ema|exponential moving average)[- ]?(\d+)/gi,
-      /(\d+)[- ]?(?:day|period)?[- ]?(?:ema|exponential moving average)/gi,
-    ];
+    // Patterns for multiple MAs: "MA 20", "MA 50", "MA 200"
+    const maPattern = /\b(?:ma|sma)\s*(\d+)/gi;
+    const emaPattern = /\bema\s*(\d+)/gi;
 
-    const maPeriods = new Set<number>();
-    const emaPeriods = new Set<number>();
-
-    for (const pattern of maPatterns) {
-      const isEma = pattern.source.includes('ema');
-      let match;
-      while ((match = pattern.exec(nl)) !== null) {
-        const period = parseInt(match[1]);
-        if (period > 0 && period <= 500) {
-          if (isEma) {
-            emaPeriods.add(period);
-          } else {
-            maPeriods.add(period);
-          }
-        }
-      }
-    }
-
-    // Add MA studies with specific periods
-    // chart-img.com API expects { length: <period> } for Moving Average
-    for (const period of maPeriods) {
-      const key = `Moving Average-${period}`;
-      if (!addedStudies.has(key)) {
+    // Extract additional MA periods
+    let match;
+    while ((match = maPattern.exec(text)) !== null) {
+      const period = parseInt(match[1]);
+      if (period > 0 && period <= 500 && !existingMaPeriods.has(period)) {
         studies.push({
           name: 'Moving Average',
           input: { length: period },
         });
-        addedStudies.add(key);
-        console.log(`[ChartConfigService] Detected MA with period: ${period}`);
+        existingMaPeriods.add(period);
       }
     }
 
-    // Add EMA studies with specific periods
-    // chart-img.com API expects { length: <period> } for Moving Average Exponential
-    for (const period of emaPeriods) {
-      const key = `Moving Average Exponential-${period}`;
-      if (!addedStudies.has(key)) {
+    // Extract additional EMA periods
+    while ((match = emaPattern.exec(text)) !== null) {
+      const period = parseInt(match[1]);
+      if (period > 0 && period <= 500 && !existingEmaPeriods.has(period)) {
         studies.push({
           name: 'Moving Average Exponential',
           input: { length: period },
         });
-        addedStudies.add(key);
-        console.log(`[ChartConfigService] Detected EMA with period: ${period}`);
+        existingEmaPeriods.add(period);
       }
     }
-
-    // If "moving average" mentioned but no period specified, add default
-    if (
-      (nl.includes('moving average') || nl.match(/\bma\b/)) &&
-      !nl.includes('macd') &&
-      maPeriods.size === 0 &&
-      emaPeriods.size === 0 &&
-      !addedStudies.has('Moving Average')
-    ) {
-      studies.push({
-        name: 'Moving Average',
-        input: undefined, // Default period (usually 9)
-      });
-      addedStudies.add('Moving Average');
-      console.log(`[ChartConfigService] Detected indicator: moving average -> Moving Average (default)`);
-    }
-
-    // If "ema" mentioned but no period specified, add default
-    if (
-      (nl.includes('ema') || nl.includes('exponential moving average')) &&
-      emaPeriods.size === 0 &&
-      !addedStudies.has('Moving Average Exponential')
-    ) {
-      studies.push({
-        name: 'Moving Average Exponential',
-        input: undefined, // Default period
-      });
-      addedStudies.add('Moving Average Exponential');
-      console.log(`[ChartConfigService] Detected indicator: ema -> Moving Average Exponential (default)`);
-    }
-
-    return studies;
   }
 
   /**

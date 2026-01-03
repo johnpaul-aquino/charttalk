@@ -88,16 +88,30 @@ export const constructChartConfigToolDefinition = {
 
 This tool is the bridge between human intent and API format. It:
 1. **Parses natural language** to extract chart requirements
-2. **Detects symbols** from common names (Bitcoin → BINANCE:BTCUSDT)
+2. **Validates symbols** in EXCHANGE:SYMBOL format
 3. **Infers time ranges** ("last 7 days" → range: "1M")
 4. **Selects optimal intervals** based on range (1M → 4h interval)
 5. **Identifies indicators** (Bollinger Bands, RSI, MACD, etc.)
 6. **Applies sensible defaults** for missing parameters
 
-**Symbol Detection:**
-- Crypto: "Bitcoin" / "BTC" → BINANCE:BTCUSDT
-- Stocks: "Apple" / "AAPL" → NASDAQ:AAPL
-- Forex: "EUR/USD" → FX:EURUSD
+**IMPORTANT: Symbol Format**
+Always provide symbols in EXCHANGE:SYMBOL format via the 'symbol' parameter:
+- Crypto: BINANCE:BTCUSDT, COINBASE:BTCUSD, BYBIT:ETHUSDT.P
+- Stocks: NASDAQ:AAPL, NYSE:BABA, AMEX:SPY
+- Forex: FX:EURUSD, OANDA:GBPUSD
+- Indices: SP:SPX, DJ:DJI, TVC:DXY, CBOE:VIX
+- Futures: CME:ES1!, COMEX:GC1!, NYMEX:CL1!
+- Bonds: TVC:US10Y
+
+**Supported Exchanges (156+):**
+- Crypto: BINANCE, COINBASE, BYBIT, OKX, KRAKEN, KUCOIN, BITFINEX...
+- Forex: FX, OANDA, PEPPERSTONE, CAPITALCOM, SAXO...
+- US Stocks: NASDAQ, NYSE, AMEX, OTC
+- Indices: SP, DJ, TVC, CBOE, RUSSELL, INDEX
+- Futures: CME, CME_MINI, COMEX, NYMEX, CBOT, EUREX...
+- Bonds: TVC
+
+Use get_exchanges tool to see all available exchanges.
 
 **Time Range Detection:**
 - "last 7 days" / "past week" → "1M"
@@ -128,11 +142,11 @@ Returns:
       },
       symbol: {
         type: 'string' as const,
-        description: 'Optional: Override symbol detection (e.g., "BINANCE:BTCUSDT")',
+        description: 'RECOMMENDED: Provide symbol in EXCHANGE:SYMBOL format (e.g., "BINANCE:BTCUSDT", "NASDAQ:AAPL", "SP:SPX", "COMEX:GC1!"). The LLM should specify this directly rather than relying on detection.',
       },
       exchange: {
         type: 'string' as const,
-        description: 'Optional: Preferred exchange (e.g., "BINANCE", "NASDAQ")',
+        description: 'Optional: Preferred exchange if symbol format needs override (e.g., "BINANCE", "NASDAQ")',
       },
       preferences: {
         type: 'object' as const,

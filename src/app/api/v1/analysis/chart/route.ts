@@ -64,7 +64,7 @@ export const POST = pipe(
   withCors,
   withRateLimit({ capacity: 10, refillRate: 2 }),
   withAuth,
-  withPlan(['pro', 'max']),
+  withPlan(['free', 'pro', 'max']),
   withErrorHandler
 )(handler);
 

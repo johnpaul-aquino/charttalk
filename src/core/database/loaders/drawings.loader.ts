@@ -118,8 +118,18 @@ export function searchDrawingsByKeyword(
 }
 
 /**
+ * Escape special regex characters in a string
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Detect drawings from natural language text
- * Uses keyword matching with confidence scoring
+ * Uses word boundary matching with confidence scoring
+ *
+ * IMPORTANT: Uses word boundaries (\b) to prevent false positives like
+ * "supertrend" matching "trend" keyword for "Trend Line" drawing.
  */
 export function detectDrawingsFromText(text: string): ParsedDrawing[] {
   const lowerText = text.toLowerCase();
@@ -130,9 +140,12 @@ export function detectDrawingsFromText(text: string): ParsedDrawing[] {
     const matchedKeywords: string[] = [];
     let matchScore = 0;
 
-    // Check exact keyword matches in text
+    // Check keyword matches in text using word boundaries
     for (const keyword of drawing.keywords) {
-      if (lowerText.includes(keyword.toLowerCase())) {
+      // Use word boundary matching to avoid false positives
+      // e.g., "supertrend" should NOT match "trend" keyword
+      const pattern = new RegExp(`\\b${escapeRegex(keyword.toLowerCase())}\\b`, 'i');
+      if (pattern.test(lowerText)) {
         matchScore += 1;
         matchedKeywords.push(keyword);
       }
